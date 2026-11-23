@@ -7,8 +7,8 @@
 <meta name="description" content="Enregistre tes cours, reçois-les rédigés, révise avec fiches, quiz et un planning du soir.">
 <meta name="theme-color" content="#151A33">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icons/icon-192.png" type="image/png">
-<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Cahier Malin">
@@ -350,7 +350,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--blue)}
 <div class="toast" id="toast" hidden></div>
 
 <script type="module">
-import { Anthropic } from "./vendor/anthropic.mjs";
+import { Anthropic } from "./anthropic.mjs";
 
 /* ---------- utilitaires ---------- */
 const $ = (s, r = document) => r.querySelector(s);
