@@ -1,6 +1,6 @@
 // Cahier Malin : garde l'appli disponible hors connexion (l'IA et la dictée demandent internet).
-const CACHE = "cahier-malin-v1";
-const SHELL = ["./", "index.html", "manifest.webmanifest", "vendor/anthropic.mjs", "icons/icon-192.png", "icons/icon-512.png"];
+const CACHE = "cahier-malin-v2";
+const SHELL = ["./", "index.html", "manifest.webmanifest", "anthropic.mjs", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
