@@ -1,0 +1,2615 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cahier Malin × Notion</title>
+<script type="application/json" id="claude-artifacts-manifest">{"permissions":["full-access","notifications"]}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..800&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE: calme (fusion Cahier de cours × Cahier Malin), outil de travail d'étudiant — rien ne doit distraire de la prise de notes
+   IDEA: un cahier Seyès français, la page sur laquelle on écrit en cours
+   PICTURE: la feuille elle-même, grande, avec sa marge rouge, au centre de l'écran
+   COLOUR and TYPE: papier blanc, lignes bleu-violet très pâles, marge rouge #e4002b, encre noire ; Archivo pour l'interface, Inter pour le texte
+   LAYOUT: barre de cible en haut, barre d'outils collante, feuille pleine largeur, bouton Compiler toujours visible */
+:root{color-scheme:light dark;--bg:light-dark(#eef0f3,#121418);--ink:light-dark(#16181c,#e9ebef);--muted:light-dark(#5d6470,#9aa1ad);--paper:light-dark(#fff,#1b1e24);--line:light-dark(#dfe3f4,#262b36);--line2:light-dark(#c4cbec,#303747);--red:#e4002b;--panel:light-dark(#fff,#1b1e24);--bd:light-dark(#d5d9e0,#2e333d);--hov:light-dark(#f0f2f6,#252932)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip}
+button,select,input,textarea{font:inherit;color:inherit}
+header{padding:20px max(4vw,14px) 12px;display:flex;flex-wrap:wrap;gap:12px 20px;align-items:end}
+h1.app{font:800 clamp(26px,4vw,36px)/1.05 Archivo,sans-serif;font-stretch:112%;margin:0 auto 0 0;letter-spacing:-.01em}
+h1.app span{color:var(--red)}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.field select,.field input{min-height:44px;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--panel);font-size:16px;color:var(--ink)}
+.field input{width:min(340px,80vw)}
+.seg{display:flex;border:1px solid var(--bd);border-radius:8px;overflow:hidden;background:var(--panel)}
+.seg button{border:0;background:none;padding:0 12px;min-height:42px;cursor:pointer;font-size:14px}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.tb{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px max(4vw,14px);display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--bd)}
+.grp{display:flex;gap:2px;background:var(--panel);border:1px solid var(--bd);border-radius:8px;padding:2px;position:relative}
+.tb button{border:0;background:none;min-width:38px;min-height:38px;border-radius:6px;cursor:pointer;font-size:15px;padding:0 8px}
+.tb button:hover,.tb button:focus-visible{background:var(--hov);outline:none}
+.tb .h1{color:#9065B0;font-weight:800}.tb .h2{color:#337EA9;font-weight:800}.tb .h3{color:#448361;font-weight:800}
+.pop{position:absolute;top:calc(100% + 6px);left:0;background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:10px;box-shadow:0 10px 30px #0003;z-index:20;display:none;width:max-content;max-width:min(92vw,360px)}
+.pop.open{display:block}
+.pop h4{margin:4px 2px 6px;font:600 12px Inter;color:var(--muted)}
+.sw{display:grid;grid-template-columns:repeat(5,34px);gap:6px}
+.sw button{width:34px;height:34px;min-width:0;border-radius:50%;border:1px solid var(--bd)}
+.sym{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px}
+.sym button{min-width:0;font-size:17px;border:1px solid var(--bd)!important}
+.callmenu button{display:flex;gap:8px;align-items:center;width:100%;text-align:left;min-height:40px}
+.tablebar{display:none}.tablebar.on{display:flex}
+.tablebar button{font-size:13px}
+main{padding:18px max(4vw,14px) 120px}
+.paper{max-width:900px;margin:0 auto;background:var(--paper);border-radius:4px;box-shadow:0 1px 3px #0002,0 12px 40px #0001;position:relative;
+background-image:linear-gradient(90deg,transparent 64px,var(--red) 64px,var(--red) 65.5px,transparent 65.5px),linear-gradient(var(--line2) 1px,transparent 1px),linear-gradient(var(--line) 1px,transparent 1px);
+background-size:100% 100%,100% 32px,100% 8px;background-position:0 0,0 23px,0 23px}
+#ed{min-height:70vh;padding:28px 28px 60px 86px;outline:none;font-size:16.5px;line-height:1.75;caret-color:var(--red)}
+#ed:empty::before{content:"Commence à écrire ton cours ici…";color:var(--muted)}
+#ed h1,#ed h2,#ed h3{font-family:Archivo,sans-serif;line-height:1.2;margin:1.1em 0 .4em}
+#ed h1{font-size:30px;color:#9065B0}#ed h2{font-size:23px;color:#337EA9}#ed h3{font-size:19px;color:#448361}
+#ed p{margin:.3em 0}#ed ul,#ed ol{margin:.3em 0;padding-left:1.6em}
+#ed table{border-collapse:collapse;margin:12px 0;width:100%;background:var(--paper)}
+#ed td,#ed th{border:1px solid var(--bd);padding:6px 10px;vertical-align:top;min-width:60px}
+#ed table[data-head="1"] tr:first-child td{background:var(--hov);font-weight:600}
+#ed hr{border:0;border-top:2px solid var(--bd);margin:18px 0}
+.callout{border-radius:8px;padding:10px 14px 10px 44px;margin:10px 0;position:relative}
+.callout::before{position:absolute;left:14px;top:10px;content:attr(data-i)}
+.callout[data-k=corr]{background:#EDF3EC;color:#1d3b26}.callout[data-k=ret]{background:#FBF3DB;color:#4a3a0e}.callout[data-k=warn]{background:#FDEBEC;color:#5d1a17}.callout[data-k=def]{background:#E7F3F8;color:#12384d}.callout[data-k=rq]{background:#F1F1EF;color:#37352f}
+.eq{display:inline-block;padding:0 4px;border-radius:4px;background:light-dark(#f3f0fa,#2a2536);cursor:pointer;user-select:all}
+.eqblock{display:block;text-align:center;padding:10px;margin:10px 0;font-size:1.15em}
+.eq:hover{outline:1px solid #9065B0}
+.callout[data-k=ex]{background:#F6F3F9;color:#3d2a4f}.callout[data-k=meth]{background:#FBECDD;color:#5a3110}.callout[data-k=exo]{background:#F4EEEE;color:#4a3328}.callout[data-k=tip]{background:#FAF1F5;color:#5a1f3d}
+#ed h4{font:700 17px/1.3 Archivo,sans-serif;color:#D9730D;margin:1em 0 .3em}
+#ed blockquote{margin:10px 0;padding:2px 0 2px 16px;border-left:3px solid var(--ink)}
+#ed code{font:14.5px ui-monospace,Menlo,Consolas,monospace;background:light-dark(#f1f0ee,#2a2d33);color:#D44C47;padding:1px 5px;border-radius:4px}
+#ed a{color:#337EA9;text-decoration:underline}
+.codeblock{margin:12px 0;border-radius:8px;background:light-dark(#f7f6f3,#23262c);border:1px solid var(--bd);overflow:hidden}
+.codeblock .lang{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--bd)}
+.codeblock select{font-size:13px;border:1px solid var(--bd);border-radius:6px;background:var(--panel);padding:2px 6px}
+.codeblock pre{margin:0;padding:12px 14px;font:14px/1.6 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;outline:none;min-height:1.6em}
+ul.todo{list-style:none;padding-left:.2em!important}
+ul.todo li{position:relative;padding-left:30px}
+ul.todo li::before{content:"";position:absolute;left:0;top:.38em;width:17px;height:17px;border:2px solid var(--muted);border-radius:4px;cursor:pointer}
+ul.todo li[data-done="1"]::before{background:#337EA9;border-color:#337EA9}
+ul.todo li[data-done="1"]::after{content:"✓";position:absolute;left:4px;top:.05em;color:#fff;font-size:14px;font-weight:700;pointer-events:none}
+ul.todo li[data-done="1"]{color:var(--muted);text-decoration:line-through}
+.cols{display:grid;gap:16px;margin:10px 0}.cols[data-n="2"]{grid-template-columns:1fr 1fr}.cols[data-n="3"]{grid-template-columns:1fr 1fr 1fr}
+.col{border:1px dashed var(--bd);border-radius:6px;padding:4px 10px;min-height:2.5em}
+.toggle{margin:10px 0;border-left:3px solid #448361;padding-left:12px}
+.tgl-t{font:700 19px/1.3 Archivo,sans-serif;color:#448361}.tgl-t::before{content:"▸ ";color:var(--muted)}
+.tgl-b{padding-left:8px}
+.toc{margin:10px 0;padding:8px 12px;border-radius:6px;background:var(--hov);color:var(--muted);font-size:14px;user-select:none}
+#ed [data-bg]{border-radius:4px;padding-inline:6px}
+#ed p[data-bg]{color:#2d2b27}
+.tb .h4{color:#D9730D;font-weight:800}
+.linkpop input{width:240px;min-height:40px;padding:6px 10px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);font-size:16px}
+.linkpop .row{margin-top:8px}
+.menu button{display:flex;gap:8px;align-items:center;width:100%;text-align:left;min-height:40px}
+@media(max-width:600px){.cols[data-n]{grid-template-columns:1fr}}
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--panel);border-top:1px solid var(--bd);padding:10px max(4vw,14px);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#status{flex:1 1 240px;font-size:14px;color:var(--muted)}
+#status a{color:#337EA9;font-weight:600}
+#status.err{color:var(--red)}#status.ok{color:#448361}
+.btn{min-height:44px;border-radius:8px;border:1px solid var(--bd);background:var(--panel);padding:0 16px;cursor:pointer;font-weight:600}
+.btn.main{background:var(--red);border-color:var(--red);color:#fff;padding:0 22px}
+.btn:disabled{opacity:.55;cursor:wait}
+.btn:focus-visible,.seg button:focus-visible,.field select:focus-visible,.field input:focus-visible{outline:3px solid #337EA9;outline-offset:2px}
+dialog{border:1px solid var(--bd);border-radius:12px;background:var(--panel);color:var(--ink);padding:18px;width:min(560px,94vw)}
+dialog::backdrop{background:#0006}
+dialog h3{margin:0 0 10px;font:700 20px Archivo}
+dialog textarea{width:100%;min-height:80px;font:16px ui-monospace,Menlo,monospace;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg)}
+.prev{min-height:56px;display:flex;align-items:center;justify-content:center;font-size:1.3em;margin:10px 0;padding:8px;border-radius:8px;background:var(--bg);overflow-x:auto}
+.row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px}
+.ltx{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:4px;max-height:150px;overflow:auto}
+.ltx button{min-height:38px;border:1px solid var(--bd);background:var(--panel);border-radius:6px;cursor:pointer}
+#mdout{width:100%;min-height:260px;font:13px ui-monospace,Menlo,monospace;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg)}
+.chk{display:flex;gap:8px;align-items:center;font-size:14px;margin-top:8px}
+@media(max-width:600px){#ed{padding:20px 14px 60px 46px}.paper{background-image:linear-gradient(90deg,transparent 32px,var(--red) 32px,var(--red) 33.5px,transparent 33.5px),linear-gradient(var(--line2) 1px,transparent 1px),linear-gradient(var(--line) 1px,transparent 1px)}.field input{width:100%}.field{flex:1 1 100%}}
+@media(prefers-reduced-motion:no-preference){.btn.main{transition:transform .15s}.btn.main:active{transform:scale(.97)}}
+#ed [data-bg=gray_bg],.viewer [data-bg=gray_bg]{background:#F1F1EF}#ed [data-bg=brown_bg],.viewer [data-bg=brown_bg]{background:#F4EEEE}#ed [data-bg=orange_bg],.viewer [data-bg=orange_bg]{background:#FBECDD}#ed [data-bg=yellow_bg],.viewer [data-bg=yellow_bg]{background:#FBF3DB}#ed [data-bg=green_bg],.viewer [data-bg=green_bg]{background:#EDF3EC}#ed [data-bg=blue_bg],.viewer [data-bg=blue_bg]{background:#E7F3F8}#ed [data-bg=purple_bg],.viewer [data-bg=purple_bg]{background:#F6F3F9}#ed [data-bg=pink_bg],.viewer [data-bg=pink_bg]{background:#FAF1F5}#ed [data-bg=red_bg],.viewer [data-bg=red_bg]{background:#FDEBEC}
+/* ---------- fusion : bibliothèque, révisions, planning ---------- */
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:16px max(4vw,14px) 0}
+.top h1.app{margin:0 auto 0 0}
+.stats{display:flex;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;background:var(--panel);border:1px solid var(--bd);font-size:13px;font-weight:600}
+.nav{display:flex;gap:4px;padding:10px max(4vw,14px) 0;border-bottom:1px solid var(--bd);overflow-x:auto}
+.nav a{padding:10px 14px;border-radius:8px 8px 0 0;color:var(--muted);text-decoration:none;font-weight:600;white-space:nowrap;min-height:44px;display:flex;align-items:center}
+.nav a.on{color:var(--ink);background:var(--panel);border:1px solid var(--bd);border-bottom-color:var(--panel);margin-bottom:-1px}
+.view{padding:18px max(4vw,14px) 120px}
+.wrap{max-width:1000px;margin:0 auto}
+.meta{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:end;padding:14px max(4vw,14px) 10px}
+#v-ecrire{padding:0}
+#v-ecrire main{padding-bottom:140px}
+.panel{background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:16px 18px;margin:12px 0}
+.panel h3{margin:0 0 8px;font:700 18px/1.25 Archivo,sans-serif}
+.label{font-size:12px;font-weight:700;color:var(--muted);text-transform:none;letter-spacing:.01em}
+.muted{color:var(--muted)}.small{font-size:14px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.between{justify-content:space-between}
+.empty{text-align:center;padding:36px 16px;background:var(--panel);border:1px dashed var(--bd);border-radius:14px;margin:14px 0}
+.empty h2{font:800 24px/1.15 Archivo,sans-serif;margin:0 0 8px}
+.empty .row{justify-content:center;margin-top:14px}
+.subject h2{font:800 22px/1.15 Archivo,sans-serif;margin:26px 0 10px;display:flex;gap:10px;align-items:baseline}
+.subject h2 small{font:600 13px Inter;color:var(--muted)}
+.clist{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.card{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:14px;cursor:pointer;min-height:44px}
+.card:hover,.card:focus-visible{border-color:var(--ink);outline:none}
+.card strong{font:700 16px/1.25 Archivo,sans-serif}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--hov);color:var(--muted);white-space:nowrap}
+.pill.ok{background:#EDF3EC;color:#2b5c3c}.pill.warn{background:#FBECDD;color:#8a4a0c}.pill.red{background:#FDEBEC;color:#a12a26}.pill.blue{background:#E7F3F8;color:#1f5a7a}
+.tonight{background:#16181c;color:#fff;border-radius:14px;padding:18px 20px;margin:6px 0 10px}
+.tonight .label{color:#c4cbec}.tonight h2{font:800 26px/1.1 Archivo,sans-serif;margin:4px 0 10px}
+.tonight ol{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px}
+.tonight a{color:#fff}
+.head{display:flex;flex-direction:column;gap:6px;margin:10px 0 6px}
+.head h1{font:800 clamp(26px,4vw,36px)/1.08 Archivo,sans-serif;margin:0}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--bd);margin:14px 0;overflow-x:auto}
+.tabs button{border:0;background:none;padding:10px 14px;min-height:44px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--red)}
+.paper.read .viewer{padding:28px 28px 40px 86px;font-size:16.5px;line-height:1.75}
+.viewer h1{font:700 30px/1.2 Archivo,sans-serif;color:#9065B0}.viewer h2{font:700 23px/1.2 Archivo,sans-serif;color:#337EA9}.viewer h3{font:700 19px/1.2 Archivo,sans-serif;color:#448361}.viewer h4{font:700 17px/1.3 Archivo,sans-serif;color:#D9730D}
+.viewer table{border-collapse:collapse;width:100%;margin:12px 0}.viewer td{border:1px solid var(--bd);padding:6px 10px;vertical-align:top}
+.viewer table[data-head="1"] tr:first-child td{background:var(--hov);font-weight:600}
+.viewer .lang select{pointer-events:none}
+.fiches{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.fiche{background:var(--panel);border:1px solid var(--bd);border-top:6px solid var(--fc);border-radius:12px;padding:14px 16px}
+.fiche h3{margin:4px 0 8px;font:700 18px/1.25 Archivo,sans-serif}
+.fiche ul{margin:0;padding-left:1.2em}
+.astuce{margin-top:10px;padding:8px 10px;border-radius:8px;background:#FBF3DB;color:#4a3a0e;font-size:15px}
+.fc{display:flex;flex-direction:column;align-items:center;gap:12px;max-width:620px;margin:0 auto}
+.bar{width:100%;height:6px;border-radius:3px;background:var(--hov);overflow:hidden}.bar i{display:block;height:100%;background:var(--red)}
+.flip{width:100%;min-height:240px;border:1px solid var(--bd);border-radius:16px;background:var(--paper);padding:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;cursor:pointer;font-size:19px;line-height:1.45;box-shadow:0 8px 30px #0001}
+.flip.back{background:#EDF3EC;color:#1d3b26}
+.boxes{display:flex;gap:4px}.boxes span{font-size:12px;padding:2px 8px;border-radius:999px;background:var(--hov);color:var(--muted)}.boxes span.on{background:#337EA9;color:#fff}
+.score{font:800 56px/1 Archivo,sans-serif}
+.choices{display:grid;gap:8px;margin:12px 0}
+.choice{display:flex;gap:12px;align-items:flex-start;text-align:left;padding:12px 14px;border:1px solid var(--bd);border-radius:10px;background:var(--panel);cursor:pointer;min-height:48px;font-size:16px}
+.choice b{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:6px;background:var(--hov);flex:none}
+.choice.good{border-color:#448361;background:#EDF3EC;color:#1d3b26}.choice.bad{border-color:#D44C47;background:#FDEBEC;color:#5d1a17}
+.mm{display:flex;flex-direction:column;align-items:center;gap:14px}
+.mm-c{font:800 20px Archivo,sans-serif;padding:10px 18px;border-radius:999px;background:#16181c;color:#fff}
+.mm-b{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;width:100%}
+.mm-b div{border:2px solid var(--fc);border-radius:12px;padding:10px 12px}
+.mm-b h4{margin:0 0 6px;color:var(--fc);font:700 16px Archivo,sans-serif}
+.mm-b span{display:inline-block;margin:2px 4px 2px 0;padding:2px 8px;border-radius:999px;background:var(--hov);font-size:13px}
+.evening{background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin:12px 0}
+.evening h3{margin:0;font:700 18px Archivo,sans-serif}
+.slot{display:grid;grid-template-columns:auto 96px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--bd)}
+.slot input{width:22px;height:22px}
+.slot .t{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+.slot.done .what{opacity:.5;text-decoration:line-through}
+.slot.cur{background:#FBF3DB;border-radius:8px;padding-inline:8px}
+.note{padding:10px 14px;border-radius:10px;background:#E7F3F8;color:#12384d;margin:10px 0}
+.note.night{background:#16181c;color:#fff}
+.note.warn{background:#FBECDD;color:#5a3110}
+.ask{display:flex;gap:8px}.ask input{flex:1;min-height:44px;padding:8px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);font-size:16px}
+.answer{white-space:pre-wrap;margin-top:10px}
+.micbtn[aria-pressed=true],.recbtn[aria-pressed=true]{background:var(--red);border-color:var(--red);color:#fff}
+#partial{font-style:italic;color:var(--muted)}
+.busy{text-align:center}.busy .spin{width:42px;height:42px;border-radius:50%;border:4px solid var(--hov);border-top-color:var(--red);margin:10px auto;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.busy .spin{animation:none}}
+.chk{display:flex;gap:8px;align-items:center;font-size:15px;margin:6px 0}
+.chk input{width:20px;height:20px}
+.danger{color:#D44C47!important;border-color:#D44C47!important}
+.ghost{background:none!important}
+@media(max-width:600px){.slot{grid-template-columns:auto 1fr;}.slot .t{grid-column:2}.slot .what{grid-column:1/-1}.slot .go{grid-column:1/-1}.paper.read .viewer{padding:20px 14px 30px 46px}}
+.row{justify-content:flex-start;margin-top:0}
+dialog .row{justify-content:flex-end;margin-top:12px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;z-index:50;max-width:min(560px,92vw);padding:12px 16px;border-radius:10px;background:#16181c;color:#fff;box-shadow:0 10px 30px #0004;font-size:15px}
+#toast.err{background:#a12a26}#toast.ok{background:#2b5c3c}
+.ok{color:#448361}.err{color:var(--red)}
+a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
+/* ---------- app de bureau : enregistrement, réglages, frise ---------- */
+#recInfo{font-size:14px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums;display:inline-flex;gap:8px;align-items:center}
+.meter{display:inline-block;width:60px;height:6px;border-radius:3px;background:var(--hov);overflow:hidden}.meter i{display:block;height:100%;width:0;background:#448361;transition:width .2s}
+.navrec{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--red);margin-left:7px}
+.timeline{position:relative;height:14px;border-radius:7px;background:var(--hov);margin:12px 0 4px}
+.timeline i{position:absolute;top:0;bottom:0;background:#337EA9;border-radius:7px}
+.timeline .now{position:absolute;top:-4px;bottom:-4px;width:3px;background:var(--red);border-radius:2px}
+.tl-scale{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;margin-bottom:4px}
+.set-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+.set-row input[type=text],.set-row select{min-height:44px;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);font-size:16px;color:var(--ink)}
+.set-row input[type=text]{flex:1 1 280px}
+.set-row label.lab{font-size:14px;color:var(--muted);min-width:150px}
+.log{white-space:pre-wrap;font:13px ui-monospace,Menlo,Consolas,monospace;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;max-height:200px;overflow:auto;margin:8px 0 0}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--muted);margin-right:6px;flex:none}.dot.ok{background:#448361}.dot.err{background:#D44C47}.dot.wait{background:#CB912F}
+.stat{display:flex;align-items:center;font-size:15px;margin:4px 0}
+#autoChip{background:#E7F3F8;color:#12384d;border-color:#c7e0ec}
+/* ====================================================================
+   THÈME : violet et rose, doux et moderne — clair / sombre
+   ==================================================================== */
+:root{
+  --bg:light-dark(#f6f3fc,#110f1a);
+  --bg2:light-dark(#fdf2f8,#171326);
+  --ink:light-dark(#1f1a33,#efeaf9);
+  --muted:light-dark(#6b6488,#a59fc0);
+  --paper:light-dark(#ffffff,#1b1729);
+  --panel:light-dark(#ffffff,#1d192c);
+  --bd:light-dark(#e6dff5,#2f2945);
+  --hov:light-dark(#f2ecfd,#29233d);
+  --line:light-dark(#efe9fb,#252036);
+  --line2:light-dark(#ddd3f6,#2f2847);
+  --red:#ec4899;
+  --violet:#7c3aed;--violet2:light-dark(#6d28d9,#a78bfa);
+  --pink:#ec4899;--pink2:light-dark(#db2777,#f472b6);
+  --grad:linear-gradient(135deg,#8b5cf6 0%,#c084fc 45%,#ec4899 100%);
+  --soft:light-dark(#f3edff,#251f3a);
+  --softpink:light-dark(#fdeaf4,#2c1d33);
+  --danger:light-dark(#d92d4c,#ff7a93);
+  --ok:light-dark(#15803d,#4ade80);
+  --shadow:0 1px 2px light-dark(#2a1b5c12,#0006),0 12px 32px light-dark(#4c2a9a14,#0005);
+  --shadow2:0 18px 50px light-dark(#6d28d926,#000a);
+  --r:16px;
+}
+body[data-th=light]{color-scheme:light!important}body[data-th=dark]{color-scheme:dark!important}
+body{background:radial-gradient(1200px 600px at 100% -10%,light-dark(#fbe7f3,#2a1534) 0,transparent 60%),radial-gradient(900px 500px at -10% 0,light-dark(#ede5ff,#1e1838) 0,transparent 55%),var(--bg);background-attachment:fixed;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+::selection{background:light-dark(#e9d5ff,#5b21b6)}
+h1.app,.head h1,.empty h2,.subject h2,.panel h3,.evening h3,.tonight h2,.fiche h3,.score,#ed h1,#ed h2,#ed h3,#ed h4,.viewer h1,.viewer h2,.viewer h3,.viewer h4,.tgl-t,dialog h3,.mm-c,.mm-b h4,.card strong{font-family:'Plus Jakarta Sans',Inter,system-ui,sans-serif!important;font-stretch:normal}
+/* ---------- en-tête et navigation ---------- */
+.top{padding:20px max(4vw,14px) 4px}
+h1.app{font-weight:800;letter-spacing:-.02em;display:flex;align-items:baseline;gap:8px}
+h1.app span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+h1.app::before{content:"✦";width:36px;height:36px;border-radius:12px;background:var(--grad);align-self:center;box-shadow:0 6px 16px #a855f755;flex:none;display:grid;place-items:center;color:#fff;font-size:18px;-webkit-text-fill-color:#fff}
+.chip{background:var(--panel);border-color:var(--bd);box-shadow:var(--shadow);padding:6px 12px}
+#autoChip{background:var(--soft);color:var(--violet2);border-color:transparent}
+.themebtn{width:40px;height:40px;border-radius:12px;border:1px solid var(--bd);background:var(--panel);cursor:pointer;font-size:18px;display:grid;place-items:center;box-shadow:var(--shadow)}
+.themebtn:hover{border-color:var(--violet2)}
+.nav{border:0;gap:6px;padding:12px max(4vw,14px) 4px}
+.nav a{border-radius:999px;min-height:42px;padding:8px 16px;border:1px solid transparent;transition:background .2s,color .2s}
+.nav a:hover{background:var(--hov);color:var(--ink)}
+.nav a.on{background:var(--grad);color:#fff;border-color:transparent;margin:0;box-shadow:0 6px 18px #a855f740}
+.navrec{background:#fff;box-shadow:0 0 0 3px #ec489966}
+/* ---------- surfaces ---------- */
+.panel,.evening,.card,.fiche,.empty,.flip,.choice,dialog,.pop{border-radius:var(--r)}
+.panel,.evening,.card,.fiche{border-color:var(--bd);box-shadow:var(--shadow)}
+.panel h3{font-size:19px;letter-spacing:-.01em}
+.label{color:var(--violet2);font-weight:700;letter-spacing:.01em}
+.card{padding:16px;gap:8px;transition:transform .2s,box-shadow .2s,border-color .2s}
+.card:hover,.card:focus-visible{border-color:var(--violet2);box-shadow:var(--shadow2);transform:translateY(-2px)}
+.empty{background:linear-gradient(var(--panel),var(--panel)) padding-box,var(--grad) border-box;border:1.5px dashed transparent}
+.subject h2{font-size:21px;letter-spacing:-.01em}
+.subject h2::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--grad);align-self:center}
+.tonight{background:var(--grad);border-radius:20px;box-shadow:0 14px 40px #a855f74d;padding:22px 24px}
+.tonight .label{color:#fde7f3}
+.head h1{letter-spacing:-.02em}
+.tabs{border:0;gap:6px;background:var(--panel);padding:5px;border-radius:999px;border:1px solid var(--bd);width:max-content;max-width:100%;box-shadow:var(--shadow)}
+.tabs button{border-radius:999px;border:0;min-height:40px;padding:8px 16px}
+.tabs button.on{background:var(--soft);color:var(--violet2);border:0}
+/* ---------- boutons et champs ---------- */
+.btn{border-radius:12px;border-color:var(--bd);font-weight:600;transition:background .15s,border-color .15s,box-shadow .15s,transform .15s}
+.btn:hover{border-color:var(--violet2);background:var(--hov)}
+.btn.main{background:var(--grad);border:0;color:#fff;box-shadow:0 6px 18px #a855f74d}
+.btn.main:hover{filter:brightness(1.05);box-shadow:0 8px 24px #ec489955}
+.btn.ghost{border-color:transparent}
+.btn:focus-visible,.seg button:focus-visible,.field select:focus-visible,.field input:focus-visible,.nav a:focus-visible,.tabs button:focus-visible{outline:3px solid #c084fc;outline-offset:2px}
+.field{color:var(--muted);font-weight:600}
+.field select,.field input,.set-row input[type=text],.set-row select,.ask input,.linkpop input,dialog textarea,#mdout{border-radius:12px;border-color:var(--bd);background:var(--panel)}
+.field select:focus,.field input:focus,.set-row input:focus,.set-row select:focus,.ask input:focus{border-color:var(--violet2);outline:none;box-shadow:0 0 0 4px light-dark(#ede5ff,#3b2a66)}
+.seg{border-radius:12px;padding:3px;gap:3px;border-color:var(--bd)}
+.seg button{border-radius:9px}
+.seg button[aria-pressed=true]{background:var(--soft);color:var(--violet2);font-weight:700}
+input[type=checkbox],input[type=radio]{accent-color:var(--violet)}
+.danger{color:var(--danger)!important;border-color:var(--danger)!important}
+.err,#status.err{color:var(--danger)}.ok,#status.ok{color:var(--ok)}
+/* ---------- éditeur ---------- */
+.tb{background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--bd);gap:8px}
+.grp{border-radius:12px;border-color:var(--bd);padding:3px;box-shadow:var(--shadow)}
+.tb button{border-radius:9px}
+.tb button:hover,.tb button:focus-visible{background:var(--soft)}
+.paper{border-radius:20px;box-shadow:var(--shadow2);border:1px solid var(--bd);
+  background-image:linear-gradient(90deg,transparent 64px,#f9a8d4 64px,#f9a8d4 66px,transparent 66px),linear-gradient(var(--line2) 1px,transparent 1px),linear-gradient(var(--line) 1px,transparent 1px)}
+#ed{caret-color:var(--pink)}
+#ed code{background:var(--softpink);color:var(--pink2)}
+.codeblock{border-radius:12px}
+.eq{background:var(--soft)}
+.dock{background:color-mix(in srgb,var(--panel) 82%,transparent);backdrop-filter:blur(14px);border-top:1px solid var(--bd);box-shadow:0 -8px 30px light-dark(#4c2a9a12,#0006)}
+.meter{background:var(--hov)}.meter i{background:var(--grad)}
+#partial{color:var(--violet2)}
+.micbtn[aria-pressed=true],.recbtn[aria-pressed=true]{background:var(--pink);border-color:var(--pink);color:#fff;box-shadow:0 0 0 5px #ec489933}
+@media(prefers-reduced-motion:no-preference){.recbtn[aria-pressed=true]{animation:pulse 1.6s ease-in-out infinite}@keyframes pulse{50%{box-shadow:0 0 0 9px #ec489910}}}
+/* ---------- révisions ---------- */
+.fiche{border-top-width:0;position:relative;overflow:hidden}
+.fiche::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:var(--fc)}
+.astuce{background:var(--softpink);color:light-dark(#831843,#fbcfe8);border-radius:12px}
+.flip{background:var(--panel);border-color:var(--bd);box-shadow:var(--shadow2);border-radius:22px}
+.flip.back{background:linear-gradient(135deg,light-dark(#f5f0ff,#241d3b),light-dark(#fdeef6,#2e1c33));color:var(--ink)}
+.boxes span.on{background:var(--violet)}
+.bar{background:var(--hov);height:8px;border-radius:4px}.bar i{background:var(--grad)}
+.score{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.choice{border-color:var(--bd)}
+.choice:hover{border-color:var(--violet2);background:var(--hov)}
+.choice b{background:var(--soft);color:var(--violet2);border-radius:8px}
+.choice.good{border-color:var(--ok);background:light-dark(#ecfdf3,#12301f);color:var(--ink)}
+.choice.bad{border-color:var(--danger);background:light-dark(#fff1f3,#3a1520);color:var(--ink)}
+.mm-c{background:var(--grad);box-shadow:0 8px 22px #a855f74d}
+.mm-b div{border-radius:14px;background:var(--panel)}
+.mm-b span{background:var(--soft)}
+/* ---------- planning ---------- */
+.timeline{background:var(--hov)}
+.timeline i{background:var(--grad)}
+.timeline .now{background:var(--ink)}
+.slot{border-color:var(--bd)}
+.slot.cur{background:var(--softpink);border-radius:12px}
+.slot input{accent-color:var(--pink)}
+/* ---------- pastilles, notes, messages ---------- */
+.pill{background:var(--hov);color:var(--muted)}
+.pill.ok{background:light-dark(#e8f8ee,#13301f);color:var(--ok)}
+.pill.warn{background:light-dark(#fff3e6,#33230f);color:light-dark(#b45309,#fbbf24)}
+.pill.red{background:light-dark(#ffe8ef,#3a1422);color:var(--pink2)}
+.pill.blue{background:var(--soft);color:var(--violet2)}
+.note{background:var(--soft);color:var(--ink);border-radius:14px;border:1px solid light-dark(#e4d8ff,#3a2f5c)}
+.note.warn{background:light-dark(#fff6e8,#2f2413);border-color:light-dark(#fde2b8,#4a3818)}
+.note.night{background:linear-gradient(135deg,#2e1065,#831843);color:#fff;border:0}
+#storeNote{font-size:14px}
+#toast{border-radius:14px;background:light-dark(#1f1a33,#efeaf9);color:light-dark(#fff,#1f1a33)}
+#toast.ok{background:linear-gradient(135deg,#16a34a,#0d9488);color:#fff}#toast.err{background:linear-gradient(135deg,#e11d48,#be185d);color:#fff}
+dialog{border-color:var(--bd);box-shadow:var(--shadow2);padding:22px}
+dialog::backdrop{background:light-dark(#2e106555,#000a);backdrop-filter:blur(3px)}
+.busy .spin{border-color:var(--hov);border-top-color:var(--violet);border-right-color:var(--pink)}
+.pop{box-shadow:var(--shadow2);border-color:var(--bd)}
+.dot.ok{background:var(--ok)}.dot.err{background:var(--danger)}.dot.wait{background:#f59e0b}
+.log{border-radius:12px}
+/* encadrés Notion : versions sombres plus douces */
+.callout[data-k=corr]{background:light-dark(#EDF3EC,#16281c);color:light-dark(#1d3b26,#c6ecd2)}.callout[data-k=ret]{background:light-dark(#FBF3DB,#2e2712);color:light-dark(#4a3a0e,#f3e2a6)}.callout[data-k=warn]{background:light-dark(#FDEBEC,#341a1d);color:light-dark(#5d1a17,#f6c4c6)}.callout[data-k=def]{background:light-dark(#E7F3F8,#132a35);color:light-dark(#12384d,#bfe3f3)}.callout[data-k=rq]{background:light-dark(#F1F1EF,#25232b);color:light-dark(#37352f,#dddae6)}.callout[data-k=ex]{background:light-dark(#F6F3F9,#262036);color:light-dark(#3d2a4f,#e2d4f5)}.callout[data-k=meth]{background:light-dark(#FBECDD,#33230f);color:light-dark(#5a3110,#f7d1ad)}.callout[data-k=exo]{background:light-dark(#F4EEEE,#2c2322);color:light-dark(#4a3328,#ead8d0)}.callout[data-k=tip]{background:light-dark(#FAF1F5,#33182a);color:light-dark(#5a1f3d,#f6cde2)}
+.callout{border-radius:14px}
+.themes{display:flex;gap:8px;flex-wrap:wrap}
+.themes button{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:110px;padding:12px;border-radius:14px;border:1.5px solid var(--bd);background:var(--panel);cursor:pointer;font-weight:600}
+.themes button i{width:72px;height:44px;border-radius:10px;border:1px solid var(--bd);display:block}
+.themes button[aria-pressed=true]{border-color:var(--violet);box-shadow:0 0 0 4px light-dark(#ede5ff,#3b2a66)}
+h2[style*=Archivo]{font-family:'Plus Jakarta Sans',Inter,sans-serif!important;letter-spacing:-.02em}
+/* ---------- barres compactes ---------- */
+.tb{padding:8px max(4vw,14px);gap:6px;align-items:center}
+.tb .grp{padding:2px}
+.tb button{min-height:36px;min-width:36px;font-size:14.5px}
+.tb .ddb{display:inline-flex;align-items:center;gap:6px;padding:0 10px;font-weight:600}
+.tb .car,.dock .car{font-size:11px;color:var(--muted)}
+#headLbl{min-width:58px;text-align:left}
+.pop.menu,.pop.callmenu{padding:6px;min-width:230px}
+.menu button,.callmenu button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;min-height:38px;padding:0 10px;border:0;background:none;border-radius:10px;cursor:pointer;font-size:14.5px;color:var(--ink)}
+.menu button:hover,.menu button:focus-visible,.callmenu button:hover,.callmenu button:focus-visible{background:var(--soft);outline:none}
+.menu .ic,.callmenu button span{width:26px;text-align:center;flex:none;font-weight:700}
+.menu .ic.h1{color:#9065B0}.menu .ic.h2{color:#337EA9}.menu .ic.h3{color:#448361}.menu .ic.h4{color:#D9730D}
+.menu kbd{margin-left:auto;font:12px Inter,sans-serif;color:var(--muted);background:var(--hov);border-radius:6px;padding:2px 6px}
+.tablebar.on{display:flex}
+.dock{flex-wrap:nowrap;gap:8px;padding:8px max(3vw,12px)}
+.dock .btn{min-height:40px;padding:0 12px;white-space:nowrap}
+.dock .btn.main{padding:0 16px}
+#status{flex:1 1 120px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13.5px}
+#partial{max-width:22vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13.5px}
+#partial:empty,#recInfo:empty{display:none}
+.dock .dd{border:0;background:none;box-shadow:none;padding:0}
+.dock #moreBtn{min-width:40px;padding:0;font-size:20px;line-height:1}
+.pop.up{top:auto;bottom:calc(100% + 8px);left:auto;right:0}
+#v-ecrire main{padding-bottom:110px}
+@media(max-width:760px){.dock{flex-wrap:wrap}#status{flex-basis:100%;order:-1}.dock .btn.main{margin-left:auto}}
+.nres{display:grid;gap:6px;margin:8px 0;max-height:320px;overflow:auto}
+.nrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--bd);border-radius:12px;background:var(--bg)}
+.nrow .btn{min-height:36px;padding:0 10px;font-size:14px}
+.xbtn{border:0;background:none;color:var(--muted);cursor:pointer;font-size:14px;padding:0 2px;line-height:1}
+.xbtn:hover{color:var(--danger)}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+</head>
+<body>
+<div class="top">
+  <h1 class="app">Cahier <span>Malin</span> <small style="font:600 15px Inter;color:var(--muted)">× Notion</small></h1>
+  <span class="chip" id="autoChip" role="status" hidden></span>
+  <div class="stats" id="stats"></div>
+  <button class="themebtn" id="themeBtn" type="button" title="Thème clair ou sombre" aria-label="Changer de thème">🌗</button>
+</div>
+<nav class="nav" aria-label="Sections">
+  <a href="#cours" data-v="cours">Mes cours</a>
+  <a href="#ecrire" data-v="ecrire">Écrire un cours<span class="navrec" id="navrec" title="Enregistrement en cours" hidden></span></a>
+  <a href="#planning" data-v="planning">Planning du soir</a>
+  <a href="#reglages" data-v="reglages">Réglages</a>
+</nav>
+<div id="storeNote" class="note" hidden style="margin:10px max(4vw,14px) 0"></div>
+
+<section class="view" id="v-cours"></section>
+<section class="view" id="v-course" hidden></section>
+<section class="view" id="v-plan" hidden></section>
+<section class="view" id="v-set" hidden></section>
+
+<section id="v-ecrire" hidden>
+<div class="meta">
+  <label class="field">Matière
+    <select id="target"></select>
+  </label>
+  <label class="field" id="newWrap" hidden>Nom de la nouvelle matière
+    <input id="newName" placeholder="ex. Cybersécurité">
+  </label>
+  <label class="field">Titre du cours
+    <input id="title" placeholder="ex. Chapitre 2 — Les ensembles">
+  </label>
+  <div class="field">Rangement dans Notion
+    <div class="seg" role="group" aria-label="Rangement dans Notion">
+      <button type="button" data-mode="append" aria-pressed="true">À la suite</button>
+      <button type="button" data-mode="sub" aria-pressed="false">Sous-page</button>
+    </div>
+  </div>
+</div>
+
+<div class="tb" id="tb">
+  <div class="grp">
+    <button class="ddb" data-pop="pHead" title="Style du paragraphe" aria-haspopup="true"><span id="headLbl">Texte</span> <span class="car">▾</span></button>
+    <div class="pop menu" id="pHead">
+      <button data-cmd="h1"><span class="ic h1">T1</span>Titre 1</button>
+      <button data-cmd="h2"><span class="ic h2">T2</span>Titre 2</button>
+      <button data-cmd="h3"><span class="ic h3">T3</span>Titre 3</button>
+      <button data-cmd="h4"><span class="ic h4">T4</span>Titre 4</button>
+      <button data-cmd="p"><span class="ic">¶</span>Texte normal</button>
+      <button data-cmd="quote"><span class="ic">❝</span>Citation</button>
+    </div>
+  </div>
+  <div class="grp">
+    <button data-cmd="bold" title="Gras (Ctrl+B)"><b>G</b></button>
+    <button data-cmd="italic" title="Italique (Ctrl+I)"><i>I</i></button>
+    <button data-cmd="underline" title="Souligné (Ctrl+U)"><u>S</u></button>
+    <button data-pop="pLink" title="Lien (Ctrl+K)">🔗</button>
+    <div class="pop linkpop" id="pLink"><h4>Adresse du lien</h4><input id="linkUrl" type="url" placeholder="https://…"><div class="row"><button class="btn" id="linkDel">Retirer</button><button class="btn main" id="linkOk">Ajouter</button></div></div>
+    <button data-pop="pColor" title="Couleurs"><span style="border-bottom:3px solid #D44C47">A</span></button>
+    <div class="pop" id="pColor"><h4>Couleur du texte</h4><div class="sw" id="swFg"></div><h4>Surlignage (mots sélectionnés)</h4><div class="sw" id="swBg"></div><h4>Fond du paragraphe entier</h4><div class="sw" id="swBlk"></div></div>
+    <button class="car" data-pop="pFmt" title="Plus de mise en forme" aria-haspopup="true">▾</button>
+    <div class="pop menu" id="pFmt">
+      <button data-cmd="strikeThrough"><span class="ic"><s>B</s></span>Barré</button>
+      <button data-cmd="icode"><span class="ic">&lt;/&gt;</span>Code dans la ligne <kbd>Ctrl+E</kbd></button>
+      <button data-cmd="removeFormat"><span class="ic">⌫</span>Effacer la mise en forme</button>
+    </div>
+  </div>
+  <div class="grp">
+    <button class="ddb" data-pop="pList" title="Listes" aria-haspopup="true">•≡ <span class="car">▾</span></button>
+    <div class="pop menu" id="pList">
+      <button data-cmd="insertUnorderedList"><span class="ic">•≡</span>Liste à puces</button>
+      <button data-cmd="insertOrderedList"><span class="ic">1≡</span>Liste numérotée</button>
+      <button data-cmd="todo"><span class="ic">☑</span>Cases à cocher</button>
+      <button data-cmd="indent"><span class="ic">⇥</span>Indenter <kbd>Tab</kbd></button>
+      <button data-cmd="outdent"><span class="ic">⇤</span>Désindenter <kbd>Maj+Tab</kbd></button>
+    </div>
+  </div>
+  <div class="grp">
+    <button class="ddb" data-pop="pIns" title="Mise en page et insertion" aria-haspopup="true">＋ Insérer <span class="car">▾</span></button>
+    <div class="pop menu" id="pIns">
+      <button data-cmd="table"><span class="ic">▦</span>Tableau</button>
+      <button data-cmd="cols2"><span class="ic">◫</span>2 colonnes</button>
+      <button data-cmd="cols3"><span class="ic">▥</span>3 colonnes</button>
+      <button data-cmd="toggle"><span class="ic">▸</span>Section dépliante</button>
+      <button data-cmd="code"><span class="ic">⌨</span>Bloc de code</button>
+      <button data-cmd="eq"><span class="ic">∑x</span>Équation dans la ligne</button>
+      <button data-cmd="eqb"><span class="ic">∑</span>Équation centrée</button>
+      <button data-cmd="toc"><span class="ic">☰</span>Sommaire</button>
+      <button data-cmd="hr"><span class="ic">—</span>Séparateur</button>
+    </div>
+  </div>
+  <div class="grp">
+    <button class="ddb" data-pop="pCall" title="Encadré" aria-haspopup="true">▣ Encadré <span class="car">▾</span></button>
+    <div class="pop callmenu" id="pCall"></div>
+    <button data-pop="pSym" title="Symboles">Ω</button>
+    <div class="pop" id="pSym"><h4>Insérer un symbole</h4><div class="sym" id="sym"></div></div>
+  </div>
+  <div class="grp">
+    <button data-cmd="undo" title="Annuler (Ctrl+Z)">↶</button>
+    <button data-cmd="redo" title="Rétablir">↷</button>
+  </div>
+  <div class="grp tablebar" id="tablebar">
+    <button data-t="row">+ ligne</button><button data-t="col">+ colonne</button>
+    <button data-t="delrow">− ligne</button><button data-t="delcol">− colonne</button>
+    <button data-t="head">En-tête</button><button data-t="del">Suppr.</button>
+  </div>
+</div>
+
+<main><div class="paper"><div id="ed" contenteditable="true" spellcheck="true"></div></div></main>
+<div class="dock">
+  <div id="status" role="status">Écris, dicte ou enregistre ton cours. Il est sauvegardé automatiquement.</div>
+  <span id="partial"></span>
+  <span id="recInfo"></span>
+  <button class="btn recbtn" id="rec" aria-pressed="false" title="Enregistrer le cours au micro (app Windows)">⏺ Enregistrer</button>
+  <button class="btn micbtn" id="mic" aria-pressed="false" title="Dicter">🎤 Dicter</button>
+  <button class="btn" id="aiNotes" title="Rédiger le cours avec l'IA">✨ Rédiger</button>
+  <div class="grp dd">
+    <button class="btn" id="moreBtn" aria-haspopup="true" aria-expanded="false" title="Plus d'actions">⋯</button>
+    <div class="pop menu up" id="pMore">
+      <button id="showMd"><span class="ic">〈/〉</span>Voir le code Notion</button>
+      <button id="done"><span class="ic">✓</span>Terminé, ranger le cours</button>
+    </div>
+  </div>
+  <button class="btn main" id="compile">Compiler vers Notion</button>
+</div>
+</section>
+
+<dialog id="dBusy">
+  <div class="busy"><h3 id="busyT">L'IA travaille</h3><div class="spin" aria-hidden="true"></div><p id="busyS" class="muted"></p><p id="busyC" class="small muted"></p>
+  <div class="row" style="justify-content:center"><button class="btn" id="busyStop">Arrêter</button></div></div>
+</dialog>
+
+<dialog id="dExam">
+  <h3>Quand a lieu le contrôle ?</h3>
+  <p class="muted small" id="examHint" hidden>Une date a été repérée dans le cours : vérifie-la.</p>
+  <label class="field">Date du contrôle<input type="date" id="examDate"></label>
+  <label class="chk"><input type="checkbox" id="examKit" checked> Préparer aussi les fiches, flashcards et quiz</label>
+  <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn" id="examNo">Pas de contrôle prévu</button><button class="btn main" id="examOk">Enregistrer</button></div>
+</dialog>
+
+<dialog id="dAi">
+  <h3>Où mettre le cours rédigé par l'IA ?</h3>
+  <p class="muted small">Ton texte d'origine reste sauvegardé dans le cours (« Texte d'origine »).</p>
+  <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn" id="aiCancel">Annuler</button><button class="btn" id="aiAppend">Ajouter en dessous</button><button class="btn main" id="aiReplace">Remplacer mon brouillon</button></div>
+</dialog>
+
+<dialog id="dSend">
+  <h3>Envoyer vers Notion</h3>
+  <label class="field">Matière dans Notion<select id="sendTarget"></select></label>
+  <label class="chk"><input type="checkbox" id="sendSub"> Dans une nouvelle sous-page (sinon à la suite de la page)</label>
+  <label class="chk"><input type="checkbox" id="sendKit" checked> Ajouter les fiches, flashcards et quiz</label>
+  <p class="small" id="sendMsg" role="status"></p>
+  <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn" id="sendNo">Fermer</button><button class="btn main" id="sendOk">Envoyer</button></div>
+</dialog>
+<div id="toast" role="status" hidden></div>
+
+<dialog id="dEq">
+  <h3 id="dEqT">Équation</h3>
+  <textarea id="tex" placeholder="ex. \forall x \in \mathbb{R}, x^2 \geq 0"></textarea>
+  <div class="ltx" id="ltx"></div>
+  <div class="prev" id="prev"></div>
+  <div class="row"><button class="btn" id="eqDel" hidden>Supprimer</button><button class="btn" id="eqCancel">Annuler</button><button class="btn main" id="eqOk">Insérer</button></div>
+</dialog>
+
+<dialog id="dMd">
+  <h3>Code envoyé à Notion</h3>
+  <textarea id="mdout" readonly></textarea>
+  <div class="row"><button class="btn" id="mdCopy">Copier</button><button class="btn main" id="mdClose">Fermer</button></div>
+</dialog>
+<input type="file" id="importFile" accept=".json,application/json" hidden>
+<script>
+{
+const ROOT='4251a69e-e546-8118-b4bc-dc09dc14c9a7';
+const DEFAULTS=[
+ {id:'4251a69e-e546-8157-9fd8-da2930037f84',name:'Conception et Développement'},
+ {id:'4251a69e-e546-81eb-b89a-dc09848c54d6',name:'Administration Réseau'},
+ {id:'4251a69e-e546-8180-8451-f140db782462',name:'Mathématiques'},
+ {id:'4251a69e-e546-8143-810e-ca63f0f530da',name:'Logique',parent:'4251a69e-e546-8180-8451-f140db782462'},
+ {id:'4251a69e-e546-810d-9fe8-c5b84f38321c',name:'Anglais'},
+ {id:'4251a69e-e546-81ab-8165-ef9e37eaf864',name:'Droit (CEJM)'},
+ {id:'4251a69e-e546-816c-830d-f97c1bbdb407',name:'Économie-Management (CEJM)'}];
+const FGC={gray:'#787774',brown:'#9F6B53',orange:'#D9730D',yellow:'#CB912F',green:'#448361',blue:'#337EA9',purple:'#9065B0',pink:'#C14C8A',red:'#D44C47'};
+const BGC={gray:'#F1F1EF',brown:'#F4EEEE',orange:'#FBECDD',yellow:'#FBF3DB',green:'#EDF3EC',blue:'#E7F3F8',purple:'#F6F3F9',pink:'#FAF1F5',red:'#FDEBEC'};
+const CALL={corr:['✅','green_bg','Correction'],ret:['📌','yellow_bg','À retenir'],warn:['⚠️','red_bg','Attention'],def:['📘','blue_bg','Définition'],ex:['💡','purple_bg','Exemple'],meth:['🛠️','orange_bg','Méthode'],exo:['✏️','brown_bg','Exercice'],tip:['✨','pink_bg','Astuce'],rq:['📝','gray_bg','Remarque']};
+const LANGS=['plain text','bash','powershell','sql','python','javascript','html','css','php','java','c','json','yaml'];
+const SYMS='∀ ∃ ∈ ∉ ℝ ℕ ℤ ℚ ⇒ ⇔ ∧ ∨ ¬ ≠ ≤ ≥ ≈ → ← ↔ × ÷ ± √ ∞ π Σ ∪ ∩ ⊂ ° €'.split(' ');
+const LTX=[['∀','\\forall '],['∃','\\exists '],['∈','\\in '],['∉','\\notin '],['ℝ','\\mathbb{R}'],['ℕ','\\mathbb{N}'],['ℤ','\\mathbb{Z}'],['⇒','\\Rightarrow '],['⇔','\\Leftrightarrow '],['∧','\\land '],['∨','\\lor '],['¬','\\neg '],['P̄','\\overline{P}'],['≠','\\neq '],['≤','\\leq '],['≥','\\geq '],['x²','^{2}'],['xₙ','_{n}'],['a/b','\\frac{a}{b}'],['√','\\sqrt{x}'],['Σ','\\sum_{i=1}^{n}'],['π','\\pi '],['∞','\\infty '],['×','\\times '],['±','\\pm '],['→','\\to '],['∪','\\cup '],['∩','\\cap '],['⊂','\\subset ']];
+const $=s=>document.querySelector(s), ed=$('#ed');
+let mode='append', savedRange=null, eqTarget=null, eqBlock=false, mcpP=window.claude?claude.use('mcp'):Promise.resolve(null);
+let targets=DEFAULTS.slice();
+const ls={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const escH=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+try{document.execCommand('defaultParagraphSeparator',false,'p')}catch(e){}
+
+/* ---------- cibles ---------- */
+function renderTargets(sel){
+  const s=$('#target');
+  s.innerHTML=targets.map(t=>`<option value="${escH(t.id)}">${t.parent?'— ':''}${escH(t.name)}</option>`).join('')+'<option value="new">+ Nouvelle matière…</option>';
+  if(sel)s.value=sel;
+  $('#newWrap').hidden=s.value!=='new';
+}
+$('#target').addEventListener('change',()=>{$('#newWrap').hidden=$('#target').value!=='new';save()});
+document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.mode;document.querySelectorAll('.seg button').forEach(x=>x.setAttribute('aria-pressed',x===b));save()}));
+
+/* ---------- couleurs : correspondance navigateur -> Notion ---------- */
+const norm=c=>{const d=document.createElement('i');d.style.color=c;document.body.appendChild(d);const v=getComputedStyle(d).color.replace(/\s/g,'');d.remove();return v};
+const FG={},BG={};
+for(const k in FGC)FG[norm(FGC[k])]=k;for(const k in BGC)BG[norm(BGC[k])]=k;
+$('#swFg').innerHTML=Object.entries(FGC).map(([k,v])=>`<button data-fg="${k}" title="${k}" style="background:${v}"></button>`).join('')+'<button data-fg="none" title="Sans couleur" style="background:linear-gradient(135deg,#fff 45%,#D44C47 45% 55%,#fff 55%)"></button>';
+$('#swBg').innerHTML=Object.entries(BGC).map(([k,v])=>`<button data-bg="${k}" title="${k}" style="background:${v}"></button>`).join('')+'<button data-bg="none" title="Sans surlignage" style="background:linear-gradient(135deg,#fff 45%,#D44C47 45% 55%,#fff 55%)"></button>';
+$('#swBlk').innerHTML=Object.entries(BGC).map(([k,v])=>`<button data-blk="${k}_bg" title="${k}" style="background:${v}"></button>`).join('')+'<button data-blk="none" title="Sans fond" style="background:linear-gradient(135deg,#fff 45%,#D44C47 45% 55%,#fff 55%)"></button>';
+$('#sym').innerHTML=SYMS.map(s=>`<button data-sym="${s}">${s}</button>`).join('');
+$('#pCall').innerHTML=Object.entries(CALL).map(([k,v])=>`<button data-call="${k}"><span>${v[0]}</span>${v[2]}</button>`).join('');
+$('#ltx').innerHTML=LTX.map(([a,b],i)=>`<button data-l="${i}" title="${escH(b)}">${a}</button>`).join('');
+
+/* ---------- barre d'outils ---------- */
+const tb=$('#tb');
+tb.addEventListener('mousedown',e=>{if(e.target.closest('button'))e.preventDefault()});
+function keepRange(){const s=getSelection();if(s.rangeCount&&ed.contains(s.anchorNode))savedRange=s.getRangeAt(0).cloneRange()}
+function restore(){ed.focus();if(savedRange){const s=getSelection();s.removeAllRanges();s.addRange(savedRange)}}
+document.addEventListener('selectionchange',()=>{keepRange();const s=getSelection();const n=s.anchorNode&&(s.anchorNode.nodeType===1?s.anchorNode:s.anchorNode.parentElement);$('#tablebar').classList.toggle('on',!!(n&&ed.contains(n)&&n.closest('td')))});
+function closePops(){document.querySelectorAll('.pop.open').forEach(p=>p.classList.remove('open'))}
+document.addEventListener('click',e=>{if(!e.target.closest('.grp'))closePops()});
+tb.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.pop){const p=$('#'+b.dataset.pop),o=p.classList.contains('open');closePops();if(!o){p.classList.add('open');if(b.dataset.pop==='pLink')openLink()}return}
+  if(b.id==='linkOk'||b.id==='linkDel'){applyLink(b.id==='linkDel');return}
+  restore();
+  const c=b.dataset.cmd;
+  if(/^h[1-4]$|^p$/.test(c))document.execCommand('formatBlock',false,c==='p'?'P':c.toUpperCase());
+  else if(c==='quote')document.execCommand('formatBlock',false,curBlock()&&curBlock().tagName==='BLOCKQUOTE'?'P':'BLOCKQUOTE');
+  else if(c==='icode')inlineCode();
+  else if(c==='todo')document.execCommand('insertHTML',false,'<ul class="todo"><li data-done="0"><br></li></ul>');
+  else if(c==='cols2'||c==='cols3'){const n=+c[4];document.execCommand('insertHTML',false,`<div class="cols" data-n="${n}">`+'<div class="col"><p><br></p></div>'.repeat(n)+'</div><p><br></p>');closePops()}
+  else if(c==='toggle'){document.execCommand('insertHTML',false,'<div class="toggle"><div class="tgl-t">Titre de la section</div><div class="tgl-b"><p>Contenu caché…</p></div></div><p><br></p>');closePops()}
+  else if(c==='code'){const sel=getSelection().toString();document.execCommand('insertHTML',false,`<div class="codeblock"><div class="lang" contenteditable="false">Code <select aria-label="Langage">${LANGS.map(l=>`<option>${l}</option>`).join('')}</select></div><pre contenteditable="true">${escH(sel)||'<br>'}</pre></div><p><br></p>`);closePops()}
+  else if(c==='toc'){document.execCommand('insertHTML',false,'<div class="toc" contenteditable="false">☰ Sommaire (généré automatiquement dans Notion)</div><p><br></p>');closePops()}
+  else if(c==='table')document.execCommand('insertHTML',false,'<table data-head="1"><tbody>'+'<tr><td><br></td><td><br></td><td><br></td></tr>'.repeat(3)+'</tbody></table><p><br></p>');
+  else if(c==='hr'){document.execCommand('insertHTML',false,'<hr><p><br></p>');closePops()}
+  else if(c==='removeFormat'){document.execCommand('removeFormat');document.execCommand('unlink');const bl=curBlock();if(bl)delete bl.dataset.bg}
+  else if(c==='eq'||c==='eqb')openEq(null,c==='eqb');
+  else if(c)document.execCommand(c,false,null);
+  if(b.dataset.fg){document.execCommand('styleWithCSS',false,true);document.execCommand('foreColor',false,b.dataset.fg==='none'?getComputedStyle(ed).color:FGC[b.dataset.fg]);closePops()}
+  if(b.dataset.bg){document.execCommand('styleWithCSS',false,true);document.execCommand('hiliteColor',false,b.dataset.bg==='none'?'transparent':BGC[b.dataset.bg]);closePops()}
+  if(b.dataset.blk){const bl=curBlock();if(bl){if(b.dataset.blk==='none')delete bl.dataset.bg;else bl.dataset.bg=b.dataset.blk}closePops()}
+  if(b.dataset.sym){document.execCommand('insertText',false,b.dataset.sym)}
+  if(b.dataset.call){const [i]=CALL[b.dataset.call];document.execCommand('insertHTML',false,`<div class="callout" data-k="${b.dataset.call}" data-i="${i}"><p>${CALL[b.dataset.call][2]} : </p></div><p><br></p>`);closePops()}
+  if(b.dataset.t)tableOp(b.dataset.t);
+  save();
+});
+function anchorEl(){const s=getSelection(),n=s.anchorNode;return n&&(n.nodeType===1?n:n.parentElement)}
+function curBlock(){const n=anchorEl();if(!n||!ed.contains(n))return null;const b=n.closest('p,h1,h2,h3,h4,blockquote,li');return b&&ed.contains(b)?b:null}
+function inlineCode(){
+  const n=anchorEl(),code=n&&n.closest('code');
+  if(code&&ed.contains(code)){code.replaceWith(document.createTextNode(code.textContent));return}
+  const t=getSelection().toString();if(!t)return;
+  document.execCommand('insertHTML',false,`<code>${escH(t)}</code>​`);
+}
+function openLink(){const n=savedRange&&savedRange.startContainer,el=n&&(n.nodeType===1?n:n.parentElement),a=el&&el.closest('a');$('#linkUrl').value=a?a.getAttribute('href'):'';setTimeout(()=>$('#linkUrl').focus(),0)}
+function applyLink(remove){
+  restore();
+  if(remove)document.execCommand('unlink');
+  else{
+    let u=$('#linkUrl').value.trim();if(!u)return;
+    if(!/^(https?:\/\/|mailto:)/i.test(u))u='https://'+u;
+    if(getSelection().isCollapsed)document.execCommand('insertHTML',false,`<a href="${escH(u)}">${escH(u)}</a>​`);
+    else document.execCommand('createLink',false,u);
+  }
+  closePops();save();
+}
+$('#linkUrl').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();applyLink(false)}});
+ed.addEventListener('keydown',e=>{
+  const n=anchorEl(),inPre=n&&n.closest('pre'),inLi=n&&n.closest('li');
+  if(e.key==='Tab'&&inPre){e.preventDefault();document.execCommand('insertText',false,'  ');return}
+  if(e.key==='Tab'&&inLi){e.preventDefault();document.execCommand(e.shiftKey?'outdent':'indent');return}
+  if(e.key==='Enter'&&inPre&&!e.shiftKey){e.preventDefault();document.execCommand('insertText',false,'\n');return}
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();keepRange();closePops();$('#pLink').classList.add('open');openLink()}
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='e'){e.preventDefault();inlineCode();save()}
+});
+ed.addEventListener('click',e=>{
+  const li=e.target.closest('ul.todo>li');
+  if(li&&e.clientX-li.getBoundingClientRect().left<28){li.dataset.done=li.dataset.done==='1'?'0':'1';save()}
+});
+ed.addEventListener('input',()=>ed.querySelectorAll('ul.todo>li:not([data-done])').forEach(li=>li.dataset.done='0'));
+ed.addEventListener('change',e=>{if(e.target.matches('.codeblock select')){e.target.querySelectorAll('option').forEach(o=>o.toggleAttribute('selected',o.selected));save()}});
+function tableOp(op){
+  const s=getSelection(),n=s.anchorNode&&(s.anchorNode.nodeType===1?s.anchorNode:s.anchorNode.parentElement);
+  const td=n&&n.closest('td');if(!td)return;const tr=td.parentElement,tbl=td.closest('table'),ci=td.cellIndex;
+  if(op==='row'){const r=tr.cloneNode(true);r.querySelectorAll('td').forEach(c=>c.innerHTML='<br>');tr.after(r)}
+  if(op==='col')for(const r of tbl.rows){const c=document.createElement('td');c.innerHTML='<br>';r.cells[ci].after(c)}
+  if(op==='delrow'){if(tbl.rows.length>1)tr.remove()}
+  if(op==='delcol'){if(tr.cells.length>1)for(const r of [...tbl.rows])r.cells[ci]&&r.cells[ci].remove()}
+  if(op==='head')tbl.dataset.head=tbl.dataset.head==='1'?'0':'1';
+  if(op==='del')tbl.remove();
+}
+
+/* ---------- équations ---------- */
+function render(tex,el,block){
+  if(window.katex){try{el.innerHTML=katex.renderToString(tex||'\\;',{output:'mathml',throwOnError:false,displayMode:!!block});return}catch(e){}}
+  el.textContent=tex;
+}
+function openEq(chip,block){
+  eqTarget=chip;eqBlock=chip?chip.classList.contains('eqblock'):block;
+  $('#tex').value=chip?chip.dataset.tex:'';
+  $('#dEqT').textContent=eqBlock?'Équation centrée':'Équation dans la ligne';
+  $('#eqOk').textContent=chip?'Modifier':'Insérer';$('#eqDel').hidden=!chip;
+  render($('#tex').value,$('#prev'),eqBlock);$('#dEq').showModal();$('#tex').focus();
+}
+$('#tex').addEventListener('input',()=>render($('#tex').value,$('#prev'),eqBlock));
+$('#ltx').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const t=$('#tex'),v=LTX[b.dataset.l][1],p=t.selectionStart;t.setRangeText(v,p,t.selectionEnd,'end');t.focus();render(t.value,$('#prev'),eqBlock)});
+$('#eqCancel').addEventListener('click',()=>$('#dEq').close());
+$('#eqDel').addEventListener('click',()=>{if(eqTarget)eqTarget.remove();$('#dEq').close();save()});
+$('#eqOk').addEventListener('click',()=>{
+  const tex=$('#tex').value.trim();$('#dEq').close();if(!tex)return;
+  if(eqTarget){eqTarget.dataset.tex=tex;render(tex,eqTarget,eqBlock);save();return}
+  restore();
+  const tag=eqBlock?'div':'span';
+  document.execCommand('insertHTML',false,`<${tag} class="eq${eqBlock?' eqblock':''}" contenteditable="false" data-tex="${escH(tex)}"></${tag}>${eqBlock?'<p><br></p>':'&nbsp;'}`);
+  ed.querySelectorAll('.eq').forEach(q=>{if(!q.childNodes.length)render(q.dataset.tex,q,q.classList.contains('eqblock'))});save();
+});
+ed.addEventListener('click',e=>{const q=e.target.closest('.eq');if(q)openEq(q)});
+function rerenderEq(){ed.querySelectorAll('.eq').forEach(q=>render(q.dataset.tex,q,q.classList.contains('eqblock')))}
+
+/* ---------- collage : texte brut, pour garder une mise en forme propre ---------- */
+ed.addEventListener('paste',e=>{e.preventDefault();const t=(e.clipboardData||window.clipboardData).getData('text/plain');document.execCommand('insertText',false,t)});
+
+/* ---------- conversion vers le Markdown de Notion ---------- */
+const INLINE=new Set(['B','STRONG','I','EM','U','S','STRIKE','SPAN','FONT','A','BR','SUB','SUP','CODE','#text']);
+const esc=t=>t.replace(/\u200b/g,'').replace(/ /g,' ').replace(/\\/g,'\\\\').replace(/([*_`$~<>\[\]])/g,'\\$1');
+const lead=s=>s.replace(/^(\s*)(\d+)([.)])/,'$1$2\\$3').replace(/^(\s*)([-+#>])(\s)/,'$1\\$2$3');
+function inl(n){let o='';for(const c of n.childNodes)o+=inl1(c);return o}
+function inl1(c){
+  if(c.nodeType===3)return esc(c.nodeValue);
+  if(c.nodeType!==1)return'';
+  if(c.classList.contains('eq'))return '$'+c.dataset.tex+'$';
+  const t=c.tagName;
+  if(t==='BR')return'<br />';
+  if(t==='CODE'){const v=c.textContent.replace(/​/g,'').replace(/`/g,'ˋ');return v.trim()?'`'+v+'`':esc(v)}
+  if(t==='DIV'||t==='P'||t==='LI')return inl(c)+'<br />';
+  let s=inl(c);if(!s.replace(/<br \/>/g,'').trim())return s;
+  if(t==='A'){const h=c.getAttribute('href')||'';if(/^(https?:|mailto:)/i.test(h))s=`[${s}](${h.replace(/[()\s]/g,encodeURIComponent)})`}
+  const st=c.style,dec=(st.textDecoration||'')+(st.textDecorationLine||'');
+  if(t==='B'||t==='STRONG'||st.fontWeight==='bold'||+st.fontWeight>=600)s='<b>'+s+'</b>';
+  if(t==='I'||t==='EM'||st.fontStyle==='italic')s='<i>'+s+'</i>';
+  if(t==='U'||dec.includes('underline'))s='<u>'+s+'</u>';
+  if(t==='S'||t==='STRIKE'||dec.includes('line-through'))s='<s>'+s+'</s>';
+  const fg=c.getAttribute('color')||st.color;if(fg){const k=FG[norm(fg)];if(k)s=`<span color="${k}">${s}</span>`}
+  const bg=st.backgroundColor;if(bg&&bg!=='transparent'){const k=BG[norm(bg)];if(k)s=`<span color="${k}_bg">${s}</span>`}
+  return s;
+}
+const trimBr=s=>s.replace(/^(\s|<br \/>)+|(\s|<br \/>)+$/g,'');
+const para=s=>{s=trimBr(s);return s?lead(s):''};
+function blocks(par){
+  const out=[];let buf='';
+  const flush=()=>{const p=para(buf);if(p)out.push(p);buf=''};
+  for(const c of par.childNodes){
+    const nm=c.nodeType===3?'#text':c.nodeName;
+    if(INLINE.has(nm)&&!(c.classList&&c.classList.contains('eqblock'))){buf+=inl1(c);continue}
+    if(c.nodeType!==1)continue;
+    flush();const b=block(c);if(b)out.push(b);
+  }
+  flush();return out.join('\n\n');
+}
+function block(c){
+  const t=c.tagName,k=c.classList;
+  const bg=c.dataset.bg&&/^[a-z]+_bg$/.test(c.dataset.bg)?c.dataset.bg:'';
+  if(/^H[1-6]$/.test(t)){const lvl=Math.min(+t[1],4),txt=trimBr(inl(c));return txt?`<h${lvl} color="${bg||['purple','blue','green','orange'][lvl-1]}">${lead(txt)}</h${lvl}>`:''}
+  if(k.contains('eqblock'))return '$$\n'+c.dataset.tex+'\n$$';
+  if(k.contains('callout')){const [i,col]=CALL[c.dataset.k]||CALL.rq;return `<callout icon="${i}" color="${col}">\n${blocks(c)||' '}\n</callout>`}
+  if(k.contains('codeblock')){const pre=c.querySelector('pre'),sel=c.querySelector('select');return codeFence(pre?pre.innerText:'',sel?sel.value:'plain text')}
+  if(t==='PRE')return codeFence(c.innerText,'plain text');
+  if(k.contains('cols'))return '<columns>\n'+[...c.querySelectorAll(':scope>.col')].map(x=>'<column>\n'+(blocks(x)||'<p />')+'\n</column>').join('\n')+'\n</columns>';
+  if(k.contains('toggle')){const tt=c.querySelector('.tgl-t'),bd=c.querySelector('.tgl-b');const title=tt?trimBr(inl(tt)):'';return `<toggle heading="h3" color="green">\n${title?lead(title):'Section'}\n\n${bd?blocks(bd):''}\n</toggle>`}
+  if(k.contains('toc'))return'<table-of-contents />';
+  if(t==='UL'||t==='OL')return list(c,0);
+  if(t==='TABLE')return tbl(c);
+  if(t==='HR')return'---';
+  if(t==='BLOCKQUOTE'){const inner=[...c.children].some(x=>!INLINE.has(x.nodeName))?blocks(c):para(inl(c));return `<quote${bg?` color="${bg}"`:''}>\n${inner}\n</quote>`}
+  if([...c.children].some(x=>!INLINE.has(x.nodeName)))return blocks(c);
+  const p=para(inl(c));
+  return p&&bg?`<p color="${bg}">${p}</p>`:p;
+}
+function list(el,d){
+  const lines=[];
+  for(const li of el.children){
+    if(li.tagName!=='LI'){if(li.tagName==='UL'||li.tagName==='OL')lines.push(list(li,d+1));continue}
+    let txt='';const subs=[];
+    for(const c of li.childNodes){if(c.nodeName==='UL'||c.nodeName==='OL')subs.push(c);else if(c.nodeName==='P'||c.nodeName==='DIV')txt+=inl(c)+'<br />';else txt+=inl1(c)}
+    const mk=el.classList.contains('todo')?(li.dataset.done==='1'?'- [x] ':'- [ ] '):el.tagName==='OL'?'1. ':'- ';
+    lines.push('\t'.repeat(d)+mk+(trimBr(txt)||' '));
+    subs.forEach(s=>lines.push(list(s,d+1)));
+  }
+  return lines.join('\n');
+}
+function tbl(el){
+  const rows=[...el.rows].map(r=>'<tr>\n'+[...r.cells].map(td=>'<td>\n'+(trimBr(inl(td))||' ')+'\n</td>').join('\n')+'\n</tr>');
+  return `<table fit-page-width="true" header-row="${el.dataset.head==='1'}">\n${rows.join('\n')}\n</table>`;
+}
+function codeFence(txt,lang){
+  txt=txt.replace(/​/g,'').replace(/\n+$/,'');
+  const run=Math.max(2,...(txt.match(/`+/g)||[]).map(x=>x.length));
+  const f='`'.repeat(run+1);
+  return `${f}${LANGS.includes(lang)?lang:'plain text'}\n${txt}\n${f}`;
+}
+const toMd=()=>blocks(ed);
+
+
+/* ====================================================================
+   FUSION : Cahier de cours (éditeur + Notion) × Cahier Malin (IA, révisions, planning, app Windows)
+   ==================================================================== */
+
+/* ---------- utilitaires ---------- */
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const today=()=>ymd(new Date());
+const addDays=(s,n)=>{const d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return ymd(d)};
+const diffDays=(a,b)=>Math.round((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/864e5);
+const niceDate=s=>s?new Date(s+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}):'';
+const longToday=()=>niceDate(today())+' '+new Date().getFullYear();
+const arr=a=>Array.isArray(a)?a:[];
+const fmt=s=>escH(String(s??'')).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+const plain=s=>String(s??'').replace(/\*\*/g,'');
+const mdFmt=s=>String(s??'').split('**').map((p,i)=>i%2?`<b>${esc(p)}</b>`:esc(p)).join('');
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const COLORS=['#9065B0','#337EA9','#448361','#D9730D','#C14C8A','#D44C47'];
+const newId=()=>'c-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function sanitize(h,forView){
+  const d=new DOMParser().parseFromString('<!DOCTYPE html><body>'+(h||''),'text/html');
+  d.querySelectorAll('script,iframe,object,embed,style,link,meta,form').forEach(x=>x.remove());
+  d.querySelectorAll('*').forEach(el=>{for(const a of [...el.attributes]){if(/^on/i.test(a.name)||(/^(href|src|xlink:href|action)$/i.test(a.name)&&/^\s*(javascript|data):/i.test(a.value))||(forView&&a.name==='contenteditable'))el.removeAttribute(a.name)}});
+  if(forView)d.querySelectorAll('select').forEach(s=>s.disabled=true);
+  return d.body.innerHTML;
+}
+const plainOf=h=>{const d=document.createElement('div');d.innerHTML=sanitize(h);return d.innerText||d.textContent||''};
+let toastT;
+function toast(msg,cls){const t=$('#toast');t.textContent=msg;t.className=cls||'';t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,5200)}
+function setStatus(msg,cls,link){const s=$('#status');s.className=cls||'';s.textContent=msg;s.title=msg;if(link){s.append(' ');const a=document.createElement('a');a.href=link;a.target='_blank';a.rel='noopener';a.textContent='Ouvrir dans Notion';s.append(a)}}
+
+/* ---------- stockage : sur ton compte (db), sinon sur cet appareil ---------- */
+const Store={db:null,uid:null,mode:'local',owner:null,q:{},
+  async init(){
+    if(!window.claude)return;
+    try{
+      const [db,user]=await Promise.all([claude.use('db'),claude.use('user')]);
+      const id=user?await user.id().catch(()=>null):null;
+      if(user)this.owner=await user.isOwner().catch(()=>null)??null;
+      if(db&&id){this.db=db;this.uid=id;this.mode='db'}
+    }catch(e){}
+  },
+  col(){return this.db.collection('data/users/'+this.uid)},
+  local(){const out=[];try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('cmn:'))out.push(Object.assign(JSON.parse(localStorage.getItem(k)),{id:k.slice(4)}))}}catch(e){}return out},
+  async all(){
+    if(this.mode!=='db')return this.local();
+    const snap=await Promise.race([this.col().get(),sleep(10000).then(()=>{throw{code:'timeout'}})]);
+    return snap.docs.map(d=>Object.assign({},d.data(),{id:d.id}));
+  },
+  put(id,obj){
+    const body=JSON.parse(JSON.stringify(obj));delete body.id;
+    const run=async()=>{
+      if(this.mode==='db'){try{await this.col().doc(id).set(body)}catch(e){if(e&&e.code==='unavailable'){await sleep(800+Math.random()*800);await this.col().doc(id).set(body)}else throw e}}
+      else localStorage.setItem('cmn:'+id,JSON.stringify(body));
+    };
+    this.q[id]=(this.q[id]||Promise.resolve()).then(run).catch(storeErr);
+    return this.q[id];
+  },
+  del(id){
+    const run=async()=>{if(this.mode==='db')await this.col().doc(id).delete();else localStorage.removeItem('cmn:'+id)};
+    this.q[id]=(this.q[id]||Promise.resolve()).then(run).catch(storeErr);return this.q[id];
+  }
+};
+function storeErr(e){
+  const c=e&&e.code;
+  if(c==='invalid_argument')toast('Ce cours est trop gros pour être sauvegardé en ligne (plus de 250 Ko). Raccourcis-le ou sépare-le en deux.','err');
+  else if(c==='quota_exceeded')toast('Espace de sauvegarde plein : supprime d\'anciens cours.','err');
+  else if(c==='revoked'||c==='not_granted')toast('La sauvegarde en ligne n\'est plus accessible. Recharge l\'app depuis claude.ai.','err');
+  else if(e&&e.name==='QuotaExceededError')toast('Mémoire de l\'appareil pleine : supprime d\'anciens cours.','err');
+  else toast('Sauvegarde impossible pour l\'instant. Garde l\'app ouverte et réessaie.','err');
+}
+
+/* ---------- état ---------- */
+const S={courses:[],profile:{kind:'profile',xp:0,streak:0,lastDay:null},current:null,tab:'cours'};
+let editing=null,FC=null,QZ=null;
+const cur=()=>S.courses.find(c=>c.id===S.current);
+const timers={};
+function saveCourse(c,soon){
+  c.updatedAt=Date.now();clearTimeout(timers[c.id]);queueExport(c);
+  if(soon){timers[c.id]=setTimeout(()=>{if(S.courses.includes(c))Store.put(c.id,c)},1200);return}
+  return Store.put(c.id,c);
+}
+function saveProfile(){clearTimeout(timers.profile);timers.profile=setTimeout(()=>Store.put('profile',S.profile),1500)}
+const settings=()=>Object.assign({auto:true,hour:18},S.profile.settings||{});
+function addXp(n){
+  const p=S.profile,t=today();
+  if(p.lastDay!==t){p.streak=p.lastDay===addDays(t,-1)?(p.streak||0)+1:1;p.lastDay=t}
+  p.xp=(p.xp||0)+n;renderStats();saveProfile();
+}
+function renderStats(){
+  const p=S.profile;
+  $('#stats').innerHTML=`<span class="chip" title="Points gagnés en révisant">⭐ ${+p.xp||0} XP</span><span class="chip" title="Jours de révision d'affilée">🔥 Série ${+p.streak||0} j</span>`;
+}
+
+/* ---------- matières : gardées avec ton compte, et retrouvées depuis les cours ---------- */
+/* chaque profil a son Notion : page racine + matières, gardées dans son espace privé.
+   Le propriétaire de l'app garde ses pages par défaut (ROOT, DEFAULTS). */
+const isOwnerView=()=>false; // copie de Bradley : pas les pages Notion de Léo, chacun configure « Mon Notion »
+function notionRoot(){const n=S.profile.notion;return n&&n.root&&n.root.id?n.root.id:(isOwnerView()?ROOT:null)}
+function notionRootTitle(){const n=S.profile.notion;return n&&n.root&&n.root.id?n.root.title:(isOwnerView()?'Léo — Efrei (BTS SIO 1)':'')}
+function loadProfileTargets(){
+  const n=S.profile.notion;
+  targets=n&&Array.isArray(n.subjects)?n.subjects.slice():(isOwnerView()?DEFAULTS.slice():[]);
+  if(!n&&isOwnerView())mergeTargets(S.profile.targets);
+}
+function mergeTargets(list){let added=false;for(const t of arr(list)){if(t&&t.id&&t.id!=='new'&&!targets.some(x=>x.id===t.id)){targets.push({id:t.id,name:String(t.name||'Matière'),parent:t.parent||undefined});added=true}}return added}
+function saveTargets(){const n=S.profile.notion||{};S.profile.notion={root:n.root&&n.root.id?n.root:(isOwnerView()?{id:ROOT,title:'Léo — Efrei (BTS SIO 1)'}:null),subjects:targets.map(t=>({id:t.id,name:t.name,parent:t.parent||undefined}))};saveProfile()}
+const firstTarget=()=>(targets[0]||{id:'new'}).id;
+
+/* ---------- éditeur : un cours = une page ---------- */
+let tSave;
+function save(){if(!editing)return;clearTimeout(tSave);tSave=setTimeout(syncEditing,900);updateRecInfo()}
+function syncEditing(){
+  clearTimeout(tSave);
+  const c=editing;if(!c)return;
+  c.html=ed.innerHTML;c.title=$('#title').value.trim();
+  const t=$('#target').value;c.subjectId=t;c.mode=mode;
+  c.subject=t==='new'?($('#newName').value.trim()||'Nouvelle matière'):((targets.find(x=>x.id===t)||{}).name||'Divers');
+  if(!S.courses.includes(c)){if(!ed.textContent.trim()&&!c.title)return;S.courses.push(c)}
+  saveCourse(c);
+}
+ed.addEventListener('input',save);$('#title').addEventListener('input',save);$('#newName').addEventListener('input',save);
+function newCourse(){
+  editing={id:newId(),kind:'course',title:'',subject:'',subjectId:$('#target').value||firstTarget(),createdAt:today(),status:'draft',html:'',raw:''};
+  ed.innerHTML='';$('#title').value='';setStatus('Nouveau cours. Écris, dicte ou enregistre : tout est sauvegardé automatiquement.','');updateRecInfo();
+}
+function openEditor(c){
+  editing=c;ed.innerHTML=sanitize(c.html||'');$('#title').value=c.title||'';
+  if(c.subjectId&&c.subjectId!=='new'&&!targets.some(t=>t.id===c.subjectId)){mergeTargets([{id:c.subjectId,name:c.subject}]);saveTargets()}
+  renderTargets(c.subjectId&&(c.subjectId==='new'||targets.some(t=>t.id===c.subjectId))?c.subjectId:firstTarget());
+  if(c.subjectId==='new')$('#newName').value=c.subject||'';
+  mode=c.mode==='sub'?'sub':'append';document.querySelectorAll('.seg button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.mode===mode));
+  rerenderEq();setStatus('Modification de « '+(c.title||'cours sans titre')+' ».','');updateRecInfo();
+}
+$('#done').addEventListener('click',()=>{
+  syncEditing();const c=editing;
+  if(R.on&&R.course===c)recToggle();
+  editing=null;
+  if(c&&S.courses.includes(c)){location.hash='cours-'+c.id}else location.hash='cours';
+});
+
+/* ---------- aperçu du code ---------- */
+$('#showMd').addEventListener('click',()=>{syncEditing();$('#mdout').value=editing?buildNotion(editing,{kit:!!editing.kit}).content:'';$('#dMd').showModal()});
+$('#mdClose').addEventListener('click',()=>$('#dMd').close());
+$('#mdCopy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('#mdout').value);$('#mdCopy').textContent='Copié ✓'}catch(e){$('#mdout').select();$('#mdCopy').textContent='Sélectionné : Ctrl+C'}setTimeout(()=>$('#mdCopy').textContent='Copier',2000)});
+
+/* ---------- dictée (navigateur et app Claude) ---------- */
+let dict=null;
+const dictMsg=r=>({not_granted:'Micro refusé : autorise la dictée dans les autorisations de l\'app, ou continue au clavier.',dismissed:'Dictée annulée.',unavailable:'La dictée n\'est pas disponible ici. Continue au clavier.',rate_limited:'La dictée est occupée. Réessaie dans un instant.',upstream_error:'Le micro ou la reconnaissance vocale a eu un problème. Réessaie.',hidden:'Dictée en pause : l\'app a été masquée. Relance-la.',time_limit:'Dictée arrêtée après 60 minutes. Relance-la pour continuer.',no_gesture:'Clique sur le bouton pour lancer la dictée.'})[r]||'La dictée s\'est arrêtée.';
+function caretToEnd(){const r=document.createRange();r.selectNodeContents(ed);r.collapse(false);const s=getSelection();s.removeAllRanges();s.addRange(r);savedRange=r.cloneRange()}
+function insertDictation(text){
+  if(!editing||!text)return;
+  ed.focus();if(savedRange&&ed.contains(savedRange.startContainer)){const s=getSelection();s.removeAllRanges();s.addRange(savedRange)}else caretToEnd();
+  if(!ed.textContent.trim())text=text.replace(/^\s+/,'');
+  document.execCommand('insertText',false,text);save();
+}
+let dictT0=0;
+(window.claude?claude.use('dictation'):Promise.resolve(null)).then(d=>{
+  if(!d)return;dict=d;
+  d.onPartial(({text})=>{$('#partial').textContent=text?'🎤 '+text:''});
+  d.onFinal(({text})=>insertDictation(text));
+  d.onState(({state,reason})=>{
+    const on=state!=='idle',b=$('#mic');b.setAttribute('aria-pressed',on);b.textContent=on?'⏹ Stop':'🎤 Dicter';
+    if(state==='listening'){if(!dictT0)dictT0=Date.now();setStatus('Je t\'écoute… parle normalement, le texte arrive dans la feuille.','')}
+    if(!on){if(dictT0&&editing){editing.minutes=(editing.minutes||0)+(Date.now()-dictT0)/60000}dictT0=0;$('#partial').textContent='';if(reason&&reason!=='stopped'&&reason!=='viewer_stopped')setStatus(dictMsg(reason),'err');if(reason==='unavailable')dict=null}
+    updateRecInfo();
+  });
+}).catch(()=>{});
+$('#mic').addEventListener('click',()=>{
+  if(!dict){const m='La dictée ne marche que dans Chrome ou dans la fenêtre principale de l\'app Claude, ouverte depuis claude.ai. Pour enregistrer tout le cours avec Whisper, installe l\'app Windows : voir Réglages.';setStatus(m,'err');toast(m,'err');return}
+  if(dict.active()){dict.stop().catch(()=>{});return}
+  if(!savedRange||!ed.contains(savedRange.startContainer))caretToEnd();
+  dict.start().catch(e=>{if(e&&e.code!=='stopped')setStatus(dictMsg(e&&e.code),'err')});
+});
+
+/* ---------- IA : Claude via ton compte, ou IA locale gratuite (Ollama) dans l'app de bureau ---------- */
+const sampleP=window.claude?claude.use('sample'):Promise.resolve(null);
+let busyCtl=null,aiBusy=false;
+$('#busyStop').addEventListener('click',()=>busyCtl&&busyCtl.abort());
+const useLocalAi=()=>dev.ai==='ollama'&&D.full&&!!D.eng;
+async function aiAvailable(){if(dev.ai==='ollama')return useLocalAi()&&!!(D.ollama&&D.ollama.has_model);return !!(await sampleP)}
+/* l'IA renvoie parfois l'objet attendu dans une enveloppe ({"cours":{…}}) ou en texte */
+function unwrap(r){if(typeof r==='string')r=parseJson(r);if(r&&typeof r==='object'&&!Array.isArray(r)&&!r.sections&&!r.flashcards&&!r.points){const v=Object.values(r);if(v.length===1&&v[0]&&typeof v[0]==='object')return v[0]}return r}
+function parseJson(t){t=String(t||'');try{return JSON.parse(t)}catch(e){}const a=t.indexOf('{'),b=t.lastIndexOf('}');if(a>=0&&b>a){try{return JSON.parse(t.slice(a,b+1))}catch(e){}}return null}
+async function aiJson(prompt,title,steps,silent){
+  const local=useLocalAi();
+  if(dev.ai==='ollama'&&!local)throw{code:'engine'};
+  const sample=local?null:await sampleP;if(!local&&!sample)throw{code:'no_ai'};
+  const ctl=new AbortController();busyCtl=ctl;aiBusy=true;
+  const onText=({text})=>{const n=(text||'').length.toLocaleString('fr-FR');if(silent)setAuto('Rédaction auto : '+title.toLowerCase()+' · '+n+' caractères');else $('#busyC').textContent='Écriture… '+n+' caractères'};
+  let rot=null;
+  if(!silent){$('#busyT').textContent=title;$('#busyS').textContent=steps[0];$('#busyC').textContent=local?'L\'IA locale réfléchit… (plusieurs minutes sur ce PC)':'Réflexion… (souvent 20 à 90 secondes)';$('#dBusy').showModal();
+    let i=0;rot=setInterval(()=>{i=Math.min(i+1,steps.length-1);$('#busyS').textContent=steps[i]},9000)}
+  try{
+    if(local){const j=unwrap(parseJson(await localAi(prompt,{signal:ctl.signal,onText})));if(j==null)throw{code:'invalid_json'};return j}
+    let r;
+    try{r=await sample.json(prompt,{signal:ctl.signal,cache:false,onText})}
+    catch(e){if(!e||!['invalid_json','bad_shape','empty_completion'].includes(e.code))throw e;
+      const t=await sample(prompt+'\n\nRéponds UNIQUEMENT avec le JSON, sans texte autour ni balises de code.',{signal:ctl.signal,cache:false,onText});
+      r=parseJson(t&&t.text);if(r==null)throw{code:'invalid_json'}}
+    r=unwrap(r);
+    if(!S.profile.aiOk){S.profile.aiOk=true;saveProfile()}
+    return r;
+  }
+  finally{aiBusy=false;clearInterval(rot);if(!silent)$('#dBusy').close()}
+}
+function aiErr(e){
+  if(e&&e.code==='local_ai')return String(e.message||'L\'IA locale a eu un problème.');
+  return({no_ai:'L\'IA n\'est disponible que lorsque l\'app est ouverte sur claude.ai.',engine:'L\'IA locale est choisie, mais le moteur de l\'app de bureau ne tourne pas : va dans Réglages.',not_granted:'Tu n\'as pas autorisé l\'app à utiliser Claude. Autorise-la dans ses permissions puis réessaie.',sampling_disabled:'Claude n\'est pas disponible pour ce compte.',capability_disabled:'L\'IA n\'est pas disponible dans cette fenêtre.',rate_limited:e&&e.reason==='usage_limit'?'Tu as atteint ta limite d\'utilisation de Claude. Réessaie plus tard : ton cours est sauvegardé.':'Trop de demandes d\'un coup. Réessaie dans une minute.',cancelled:'Rédaction arrêtée. Ton cours est intact.',invalid_json:'La réponse est arrivée incomplète. Relance.',prompt_too_large:'Le cours est trop long pour l\'IA. Sépare-le en deux.',refused:'Claude n\'a pas pu traiter ce texte. Vérifie le contenu puis réessaie.',empty_completion:'L\'IA n\'a rien répondu. Réessaie.',session_expired:'Reconnecte-toi à claude.ai puis réessaie.',bad_shape:'La réponse de l\'IA n\'avait pas la bonne forme. Relance.'})[e&&e.code]||'La rédaction a échoué. Ton cours est sauvegardé, réessaie dans un instant.';
+}
+function notesPrompt(c,text){
+  return `Tu es l'assistant de prise de notes d'un élève francophone de BTS SIO. Nous sommes le ${longToday()} (${today()}).
+Voici les notes qu'il a prises pendant un cours${c.subject?' (matière : '+c.subject+')':''} : texte tapé, DICTÉ ou ENREGISTRÉ au micro puis transcrit automatiquement, donc parfois brut.
+Il peut contenir du bruit : bavardages, phrases inachevées, répétitions, mots mal reconnus, remarques hors sujet.
+
+Ta mission :
+1. Garder tout ce qui relève du contenu du cours, et les informations utiles : devoirs, annonces, « ça tombera au contrôle », dates.
+2. Corriger les erreurs évidentes de reconnaissance vocale (noms propres, termes techniques) d'après le contexte.
+3. Restituer un cours STRUCTURÉ, CONCIS mais COMPLET : aucune notion ne doit manquer. 3 à 6 parties de 3 à 6 points chacune ; chaque point est une phrase courte (moins de 25 mots).
+4. Mets en **gras** (double astérisque) les mots-clés les plus importants, avec parcimonie.
+5. Si les notes mélangent plusieurs langues (cours d'anglais…), rédige les explications en français et garde le vocabulaire étudié dans sa langue, avec la traduction entre parenthèses.
+
+Réponds uniquement avec un objet JSON de cette forme :
+{"titre":"titre court du cours","matiere":"matière","resume":"3 à 4 phrases qui résument le cours","sections":[{"titre":"I. …","points":["phrase courte et claire"],"exemple":"exemple donné en cours ou null"}],"definitions":[{"terme":"…","definition":"…"}],"a_retenir":["5 à 8 idées essentielles"],"dates_formules":[{"label":"date, formule, chiffre ou auteur","valeur":"…"}],"consignes":["devoirs ou annonces du professeur"],"date_controle_mentionnee":"AAAA-MM-JJ si une date de contrôle est annoncée, sinon null"}
+Les tableaux vides sont permis.
+
+NOTES :
+"""
+${text}
+"""`;
+}
+/* cours très long avec l'IA locale : on relève d'abord chaque partie (comme Cahier Malin) */
+function splitText(t,size){const out=[];let i=0;while(i<t.length){let end=Math.min(t.length,i+size);if(end<t.length){const dot=t.lastIndexOf('. ',end);if(dot>i+size*0.6)end=dot+1}out.push(t.slice(i,end).trim());i=end}return out.filter(Boolean)}
+function partPrompt(c,part,i,n){
+  return `Voici la partie ${i+1} sur ${n} des notes d'un cours${c.subject?' de '+c.subject:''} (texte tapé, dicté ou transcrit automatiquement en classe). Nous sommes le ${today()}.
+Il contient du bruit (bavardages, remarques hors sujet, mots mal reconnus) : ignore-le.
+Relève TOUT ce que le professeur enseigne dans cette partie, sans rien oublier : chaque notion, explication, exemple, chiffre, nom, règle ou méthode, sous forme de points courts et précis en français (garde en langue étrangère le vocabulaire étudié, avec la traduction). Corrige les mots mal reconnus d'après le contexte.
+Ajoute les définitions, les dates ou formules, les consignes (devoirs, « ça tombera au contrôle ») et la date de contrôle si elle est annoncée (AAAA-MM-JJ, sinon null).
+Réponds uniquement en JSON : {"points":["…"],"definitions":[{"terme":"…","definition":"…"}],"dates_formules":[{"label":"…","valeur":"…"}],"consignes":["…"],"date_controle":null}
+
+NOTES (partie ${i+1}/${n}) :
+"""
+${part}
+"""`;
+}
+function kitPrompt(c){
+  const days=c.examDate?diffDays(today(),c.examDate):null;
+  const src=c.notes?'COURS (JSON) :\n'+JSON.stringify(c.notes):'COURS :\n"""\n'+plainOf(c.html).slice(0,60000)+'\n"""';
+  const local=useLocalAi();
+  return `Tu crées un kit de révision motivant pour un élève francophone de BTS SIO, à partir du cours ci-dessous.${days!==null?' Le contrôle a lieu dans '+days+' jour(s).':''}
+Les révisions se font le soir entre 21h et 23h : contenus courts, percutants, ludiques, jamais ennuyeux. Utilise le tutoiement. Couvre TOUT le cours.
+
+Réponds uniquement avec un objet JSON :
+{"fiches":[{"titre":"…","essentiel":["4 à 6 puces courtes, mots-clés en **gras**"],"astuce":"un moyen simple de s'en souvenir"}],
+"flashcards":[{"q":"question courte","r":"réponse courte"}],
+"quiz":[{"question":"…","choix":["A","B","C","D"],"bonne":0,"explication":"pourquoi, en une phrase"}],
+"mnemos":[{"pour":"ce qu'il faut retenir","astuce":"phrase, acronyme ou image mentale"}],
+"feynman":["3 défis du type « Explique à un enfant de 10 ans pourquoi… »"],
+"carte_mentale":{"centre":"thème","branches":[{"titre":"…","feuilles":["2 à 4 mots-clés"]}]}}
+Quantités : ${local?'3 à 4 fiches, 10 à 14 flashcards, 8 à 10 questions de quiz':'3 à 6 fiches, 12 à 24 flashcards, 10 à 15 questions de quiz'} (4 choix, "bonne" = index 0-3 de la bonne réponse, varie sa position, pièges plausibles), 2 à 5 mnémotechniques, 3 défis Feynman, 3 à 6 branches.
+
+${src}`;
+}
+function notesToHtml(n){
+  const li=a=>arr(a).map(x=>`<li>${fmt(x)}</li>`).join('');
+  let h=`<div class="callout" data-k="rq" data-i="📝"><p><b>En bref.</b> ${fmt(n.resume)}</p></div>`;
+  if(arr(n.a_retenir).length)h+=`<div class="callout" data-k="ret" data-i="📌"><p><b>À retenir absolument</b></p><ul>${li(n.a_retenir)}</ul></div>`;
+  arr(n.sections).forEach(s=>{h+=`<h2>${fmt(s.titre)}</h2><ul>${li(s.points)}</ul>`;if(s.exemple&&s.exemple!=='null')h+=`<div class="callout" data-k="ex" data-i="💡"><p>Exemple : ${fmt(s.exemple)}</p></div>`});
+  const tb=(hd,rows)=>`<table data-head="1"><tbody><tr><td>${hd[0]}</td><td>${hd[1]}</td></tr>${rows}</tbody></table>`;
+  if(arr(n.definitions).length)h+='<h2>Définitions</h2>'+tb(['Terme','Définition'],n.definitions.map(d=>`<tr><td>${fmt(d.terme)}</td><td>${fmt(d.definition)}</td></tr>`).join(''));
+  if(arr(n.dates_formules).length)h+='<h2>Dates, formules, chiffres</h2>'+tb(['Élément','Valeur'],n.dates_formules.map(d=>`<tr><td>${fmt(d.label)}</td><td>${fmt(d.valeur)}</td></tr>`).join(''));
+  if(arr(n.consignes).length)h+=`<h2>Consignes du prof</h2><ul class="todo">${arr(n.consignes).map(x=>`<li data-done="0">${fmt(x)}</li>`).join('')}</ul>`;
+  return h+'<p><br></p>';
+}
+const STEPS_NOTES=['Tri entre le cours et le bruit…','Correction des mots mal entendus…','Structuration en parties…','Définitions et points à retenir…','Dernières finitions…'];
+async function draftNotes(c,text,silent){
+  if(useLocalAi()&&text.length>6000){
+    const parts=splitText(text,6000),acc={points:[],definitions:[],dates_formules:[],consignes:[],date:null};
+    for(let i=0;i<parts.length;i++){
+      const p=await aiJson(partPrompt(c,parts[i],i,parts.length),'Lecture du cours ('+(i+1)+'/'+parts.length+')',['Lecture de la partie '+(i+1)+' sur '+parts.length+'…'],silent);
+      if(!p||typeof p!=='object')continue;
+      acc.points.push(...arr(p.points));acc.definitions.push(...arr(p.definitions));acc.dates_formules.push(...arr(p.dates_formules));acc.consignes.push(...arr(p.consignes));
+      if(p.date_controle&&/^\d{4}-\d{2}-\d{2}$/.test(p.date_controle))acc.date=p.date_controle;
+    }
+    text=acc.points.map(x=>'- '+x).join('\n')+(acc.definitions.length?'\nDéfinitions : '+acc.definitions.map(d=>(d.terme||'')+' = '+(d.definition||'')).join(' ; '):'')+(acc.dates_formules.length?'\nDates/formules : '+acc.dates_formules.map(d=>(d.label||'')+' : '+(d.valeur||'')).join(' ; '):'')+(acc.consignes.length?'\nConsignes : '+acc.consignes.join(' ; '):'')+(acc.date?'\nDate du contrôle annoncée : '+acc.date:'');
+  }
+  return aiJson(notesPrompt(c,text.slice(0,120000)),'Rédaction du cours',STEPS_NOTES,silent);
+}
+let aiPending=null;
+async function generateNotes(c,silent){
+  const text=(c===editing?ed.innerText:plainOf(c.html)).trim();
+  if(text.length<40){if(!silent){const m='Écris, dicte ou enregistre d\'abord un peu plus de contenu (quelques phrases), puis lance la rédaction.';setStatus(m,'err');toast(m,'err')}return false}
+  try{
+    const n=await draftNotes(c,text,silent);
+    if(!n||typeof n!=='object'||!arr(n.sections).length)throw{code:'bad_shape'};
+    if(silent){const g=applyNotes(c,n,text,'replace');if(!c.examDate&&g&&/^\d{4}-\d{2}-\d{2}$/.test(g)&&g>today()){c.examDate=g;saveCourse(c)}return true}
+    aiPending={c,n,text};$('#dAi').showModal();return true;
+  }catch(e){if(!silent){const m=aiErr(e)+(e&&e.code&&!['cancelled','no_ai','engine'].includes(e.code)?' (code : '+e.code+')':'');setStatus(m,e&&e.code==='cancelled'?'':'err');if(!(e&&e.code==='cancelled'))toast(m,'err')}else S.autoErr=aiErr(e);return false}
+}
+function applyNotes(c,n,text,how){
+  c.raw=(c.raw?c.raw+'\n\n———\n\n':'')+text;c.notes=n;c.status='ready';
+  const html=notesToHtml(n);
+  if(c===editing){
+    if(!$('#title').value.trim())$('#title').value=plain(n.titre||'');
+    if(how==='replace')ed.innerHTML=html;else ed.insertAdjacentHTML('beforeend',html);
+    syncEditing();
+  }else{
+    if(!c.title)c.title=plain(n.titre||'');
+    c.html=how==='replace'?html:(c.html||'')+html;saveCourse(c);
+  }
+  addXp(20);
+  return n.date_controle_mentionnee;
+}
+$('#aiNotes').addEventListener('click',()=>{syncEditing();if(editing)generateNotes(editing,false)});
+function applyAi(how){
+  $('#dAi').close();const p=aiPending;aiPending=null;if(!p||how==='cancel')return;
+  const {c,n,text}=p;
+  const g=applyNotes(c,n,text,how);
+  setStatus('Cours rédigé ✓ Relis-le et modifie ce que tu veux.','ok');
+  if(!c.examDate&&g&&/^\d{4}-\d{2}-\d{2}$/.test(g)&&g>today())askExam(c,g);
+}
+$('#aiReplace').addEventListener('click',()=>applyAi('replace'));
+$('#aiAppend').addEventListener('click',()=>applyAi('append'));
+$('#aiCancel').addEventListener('click',()=>applyAi('cancel'));
+async function generateKit(c,silent){
+  if(!plainOf(c.html).trim()&&!c.notes){if(!silent)toast('Ce cours est vide : écris-le avant de préparer les révisions.','err');return false}
+  try{
+    const k=await aiJson(kitPrompt(c),'Préparation des révisions',['Création des fiches de synthèse…','Fabrication des flashcards…','Écriture du quiz et de ses pièges…','Recherche de moyens mnémotechniques…','Dessin de la carte mentale…'],silent);
+    if(!k||typeof k!=='object'||!arr(k.flashcards).length)throw{code:'bad_shape'};
+    c.kit=k;c.cards={};if(FC&&FC.id===c.id)FC=null;if(QZ&&QZ.id===c.id)QZ=null;await saveCourse(c);
+    if(silent)return true;
+    toast(c.examDate?'Fiches, quiz et planning prêts. Rendez-vous ce soir à 21:00.':'Fiches et quiz prêts.','ok');
+    S.current=c.id;S.tab='fiches';if(location.hash!=='#cours-'+c.id)location.hash='cours-'+c.id;else renderCourse();
+    return true;
+  }catch(e){if(!silent)toast(aiErr(e)+(e&&e.code&&!['cancelled','no_ai','engine'].includes(e.code)?' (code : '+e.code+')':''),'err');else S.autoErr=aiErr(e);return false}
+}
+
+/* ---------- date du contrôle ---------- */
+let examCourse=null;
+function askExam(c,guess){
+  examCourse=c;const d=$('#examDate');d.min=addDays(today(),1);
+  d.value=c.examDate||(guess&&guess>today()?guess:'');$('#examHint').hidden=!(guess&&!c.examDate);
+  $('#examKit').checked=!c.kit;$('#examKit').closest('label').hidden=!!c.kit;
+  $('#dExam').showModal();
+}
+$('#examNo').addEventListener('click',()=>{const c=examCourse;$('#dExam').close();if(c&&c.examDate){c.examDate=null;saveCourse(c);rerender()}});
+$('#examOk').addEventListener('click',()=>{
+  const c=examCourse,v=$('#examDate').value;$('#dExam').close();if(!c)return;
+  c.examDate=v&&v>today()?v:null;saveCourse(c);
+  if($('#examKit').checked&&!c.kit)generateKit(c);else rerender();
+});
+
+/* ---------- Notion ---------- */
+function kitToMd(k){
+  const out=['<toggle heading="h2" color="purple">\n🧠 Révisions'];
+  if(arr(k.fiches).length){out.push('<h3 color="green">Fiches</h3>');k.fiches.forEach(f=>out.push(`<callout icon="🗂️" color="blue_bg">\n<b>${mdFmt(f.titre)}</b>\n\n${arr(f.essentiel).map(x=>'- '+mdFmt(x)).join('\n')}${f.astuce?'\n\n✨ Astuce : '+mdFmt(f.astuce):''}\n</callout>`))}
+  if(arr(k.flashcards).length)out.push('<h3 color="green">Flashcards</h3>',`<table fit-page-width="true" header-row="true">\n<tr>\n<td>\nQuestion\n</td>\n<td>\nRéponse\n</td>\n</tr>\n${k.flashcards.map(f=>`<tr>\n<td>\n${mdFmt(f.q)||' '}\n</td>\n<td>\n${mdFmt(f.r)||' '}\n</td>\n</tr>`).join('\n')}\n</table>`);
+  if(arr(k.quiz).length)out.push('<h3 color="green">Quiz</h3>',k.quiz.map(q=>{const g=Number(q.bonne);return '1. '+mdFmt(q.question)+'\n'+arr(q.choix).map((ch,i)=>'\t- '+'ABCD'[i]+') '+mdFmt(ch)).join('\n')+`\n\t- <span color="green">Réponse : ${'ABCD'[g]||'?'}</span>${q.explication?' — '+mdFmt(q.explication):''}`}).join('\n'));
+  if(arr(k.mnemos).length)out.push('<h3 color="green">Moyens mnémotechniques</h3>',k.mnemos.map(m=>'- <b>'+mdFmt(m.pour)+'</b> : '+mdFmt(m.astuce)).join('\n'));
+  if(arr(k.feynman).length)out.push('<h3 color="green">Défis Feynman</h3>',k.feynman.map(f=>'- '+mdFmt(f)).join('\n'));
+  const mm=k.carte_mentale;if(mm&&mm.centre)out.push('<h3 color="green">Carte mentale</h3>','- <b>'+mdFmt(mm.centre)+'</b>\n'+arr(mm.branches).map(b=>'\t- '+mdFmt(b.titre)+'\n'+arr(b.feuilles).map(f=>'\t\t- '+mdFmt(f)).join('\n')).join('\n'));
+  return out.join('\n\n')+'\n</toggle>';
+}
+function dateLineFor(c){const d=new Date((c.createdAt||today())+'T12:00:00');let s=d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});return `<span color="gray">${s[0].toUpperCase()+s.slice(1)}</span>`}
+function buildNotion(c,{sub,kit,target}){
+  const tmp=document.createElement('div');tmp.innerHTML=sanitize(c.html||'');
+  let body=blocks(tmp);if(kit&&c.kit)body+=(body?'\n\n':'')+kitToMd(c.kit);
+  const title=c.title||('Cours du '+new Date((c.createdAt||today())+'T12:00:00').toLocaleDateString('fr-FR'));
+  const h=`<h1 color="purple">${lead(esc(title))}</h1>`;
+  if((target||c.subjectId)==='new')return{title,content:'<table-of-contents />\n\n'+h+'\n\n'+dateLineFor(c)+'\n\n'+body};
+  if(sub)return{title,content:dateLineFor(c)+'\n\n'+body};
+  return{title,content:h+'\n\n'+dateLineFor(c)+'\n\n'+body};
+}
+const pageUrl=id=>'https://app.notion.com/p/'+id.replace(/-/g,'');
+function notionErr(e){
+  switch(e&&e.code){
+    case'no_root':return'Choisis d\'abord la page de ton Notion où ranger les matières : Réglages > Mon Notion.';
+    case'no_target':return'Choisis une matière, ou configure ton Notion dans Réglages > Mon Notion.';
+    case'needs_reauth':return'La connexion à Notion a expiré : reconnecte Notion dans claude.ai → Paramètres → Connecteurs.';
+    case'server_not_connected':return'Notion n\'est pas connecté : ajoute-le dans claude.ai → Paramètres → Connecteurs.';
+    case'selection_required':return'Plusieurs connecteurs Notion existent : choisis-en un quand claude.ai te le demande, puis renvoie.';
+    case'approval_required':case'not_in_manifest':case'consent_required':return'Autorise l\'app à écrire dans Notion (claude.ai te le demande), puis renvoie.';
+    case'blocked_by_policy':return'Ton organisation bloque cette action Notion.';
+    case'tool_error':return'Notion a refusé l\'ajout : '+String(e.message||'erreur inconnue').slice(0,200);
+    case'server_unavailable':case'upstream_error':return'Notion n\'a pas répondu. Le cours a peut-être quand même été ajouté : vérifie dans Notion avant de renvoyer.';
+    default:return'Ici, l\'app ne peut pas joindre Notion. Ouvre-la depuis claude.ai, ou utilise « Voir le code ».';
+  }
+}
+async function sendCourse(c,opts){
+  const mcp=await mcpP;if(!mcp)throw{code:'not_granted'};
+  const target=opts.target||c.subjectId;
+  const {title,content}=buildNotion(c,Object.assign({},opts,{target}));
+  let url;
+  if(!target)throw{code:'no_target'};
+  if(target==='new'){
+    const name=c.subject||'Nouvelle matière',root=notionRoot();
+    if(!root)throw{code:'no_root'};
+    const r=await mcp.callTool('Notion','notion-create-pages',{parent:{type:'page_id',page_id:root},allow_async:false,pages:[{properties:{title:name},icon:'📚',content}]});
+    const p=r.payload&&r.payload.pages&&r.payload.pages[0];
+    if(p&&p.id){mergeTargets([{id:p.id,name}]);saveTargets();c.subjectId=p.id;if(editing===c)renderTargets(p.id)}
+    url=p&&p.url;
+  }else if(opts.sub){
+    const r=await mcp.callTool('Notion','notion-create-pages',{parent:{type:'page_id',page_id:target},allow_async:false,pages:[{properties:{title},icon:'📝',content}]});
+    const p=r.payload&&r.payload.pages&&r.payload.pages[0];url=p&&p.url;
+  }else{
+    await mcp.callTool('Notion','notion-update-page',{page_id:target,command:'insert_content',position:{type:'end'},allow_async:false,content});
+    url=pageUrl(target);
+  }
+  c.notion={url:url&&/^https:\/\//.test(url)?url:null,at:today()};saveCourse(c);addXp(10);
+  return c.notion.url;
+}
+$('#compile').addEventListener('click',async()=>{
+  syncEditing();const c=editing;
+  if(!c||!ed.textContent.trim()){setStatus('La page est vide : écris ton cours avant de compiler.','err');return}
+  if($('#target').value==='new'&&!$('#newName').value.trim()){setStatus('Donne un nom à la nouvelle matière.','err');$('#newName').focus();return}
+  const b=$('#compile');b.disabled=true;b.textContent='Envoi…';setStatus('Envoi vers Notion…','');
+  try{const url=await sendCourse(c,{sub:mode==='sub',kit:!!c.kit});setStatus('« '+(c.title||'Cours')+' » est dans Notion ✓'+(c.kit?' (avec les révisions)':''),'ok',url)}
+  catch(e){setStatus(notionErr(e),'err')}
+  finally{b.disabled=false;b.textContent='Compiler vers Notion'}
+});
+let sendC=null;
+function openSend(c){
+  sendC=c;const s=$('#sendTarget');
+  if(c.subjectId&&c.subjectId!=='new'&&!targets.some(t=>t.id===c.subjectId)){mergeTargets([{id:c.subjectId,name:c.subject}]);saveTargets()}
+  s.innerHTML=targets.map(t=>`<option value="${escH(t.id)}">${t.parent?'— ':''}${escH(t.name)}</option>`).join('')+(c.subjectId==='new'?`<option value="new">+ ${escH(c.subject||'Nouvelle matière')} (nouvelle)</option>`:'');
+  s.value=c.subjectId&&[...s.options].some(o=>o.value===c.subjectId)?c.subjectId:(s.options[0]&&s.options[0].value);
+  $('#sendSub').checked=c.mode==='sub';$('#sendKit').checked=!!c.kit;$('#sendKit').disabled=!c.kit;
+  $('#sendMsg').textContent=c.kit?'':'Les révisions ne sont pas encore préparées pour ce cours.';$('#sendMsg').className='small muted';
+  $('#dSend').showModal();
+}
+$('#sendNo').addEventListener('click',()=>$('#dSend').close());
+$('#sendOk').addEventListener('click',async()=>{
+  const c=sendC;if(!c)return;const b=$('#sendOk'),m=$('#sendMsg');b.disabled=true;b.textContent='Envoi…';m.className='small muted';m.textContent='Envoi vers Notion…';
+  try{const url=await sendCourse(c,{target:$('#sendTarget').value,sub:$('#sendSub').checked,kit:$('#sendKit').checked});m.className='small ok';m.textContent='Envoyé ✓ ';if(url){const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.textContent='Ouvrir dans Notion';m.append(a)}rerender()}
+  catch(e){m.className='small err';m.textContent=notionErr(e)}
+  finally{b.disabled=false;b.textContent='Envoyer'}
+});
+
+/* ---------- planning du soir 21:00 – 23:00 (Cahier Malin) ---------- */
+const SLOTS=[['21:00','21:25'],['21:30','21:55'],['22:00','22:25'],['22:30','22:55']];
+const TASKS={
+  fiches:{label:'Lire les fiches de synthèse',tab:'fiches',how:'Lis, puis cache et redis l\'essentiel de chaque fiche.'},
+  flashcards:{label:'Flashcards : rappel actif',tab:'flashcards',how:'Réponds de tête avant de retourner la carte.'},
+  quiz:{label:'Quiz chrono',tab:'quiz',how:'Vise 80 % ou plus, relis les explications des erreurs.'},
+  feynman:{label:'Méthode Feynman à voix haute',tab:'methodes',how:'Explique sans regarder, comme à un enfant de 10 ans.'},
+  carte:{label:'Carte mentale de mémoire',tab:'methodes',how:'Redessine-la sur papier, puis compare.'},
+  mnemos:{label:'Moyens mnémotechniques',tab:'methodes',how:'Répète chaque astuce trois fois, à voix haute.'}};
+const ROT=[['flashcards','quiz'],['mnemos','flashcards'],['quiz','carte']];
+const mins=hm=>{const [h,m]=hm.split(':').map(Number);return h*60+m};
+const nowMin=()=>{const n=new Date();return n.getHours()*60+n.getMinutes()};
+function buildPlan(){
+  const t=today(),start=nowMin()>22*60+30?addDays(t,1):t,ev={};
+  S.courses.filter(c=>c.examDate&&c.examDate>t).forEach(c=>{
+    for(let d=start,i=0;d<c.examDate;d=addDays(d,1),i++){
+      const k=diffDays(d,c.examDate);let tasks=null;
+      if(k===1)tasks=i===0?['fiches','flashcards','quiz']:['flashcards','quiz'];
+      else if(i===0)tasks=['fiches','flashcards'];
+      else if(k===2)tasks=['quiz','feynman'];
+      else if(k===3)tasks=['carte','flashcards'];
+      else if([1,3,6,10].includes(i)||i%7===0)tasks=ROT[i%3];
+      if(tasks)(ev[d]=ev[d]||[]).push(...tasks.map(type=>({type,c,k})));
+    }
+  });
+  return Object.keys(ev).sort().map(date=>{
+    const all=ev[date].sort((a,b)=>a.k-b.k),cap=all[0].k===1?3:4;
+    return{date,slots:all.slice(0,cap).map((x,i)=>Object.assign({},x,{from:SLOTS[i][0],to:SLOTS[i][1]})),overflow:Math.max(0,all.length-cap)};
+  });
+}
+const doneKey=(date,s)=>date+'|'+s.type;
+const isDone=(date,s)=>!!(s.c.done&&s.c.done[doneKey(date,s)]);
+function slotRow(date,s,isToday){
+  const now=isToday&&nowMin()>=mins(s.from)&&nowMin()<mins(s.to),id='ck-'+date+'-'+s.c.id+'-'+s.type;
+  return `<div class="slot${isDone(date,s)?' done':''}${now?' cur':''}"><input type="checkbox" id="${escH(id)}" data-date="${date}" data-cid="${escH(s.c.id)}" data-type="${s.type}" ${isDone(date,s)?'checked':''} aria-label="Marquer comme fait">
+    <span class="t">${s.from}–${s.to}</span>
+    <label class="what" for="${escH(id)}"><strong>${escH(TASKS[s.type].label)}</strong><br><span class="small muted">${escH(s.c.subject||'')} · ${escH(s.c.title||'')} · ${escH(TASKS[s.type].how)}</span></label>
+    <button class="btn go" data-open="${escH(s.c.id)}" data-tab="${TASKS[s.type].tab}">Y aller</button></div>`;
+}
+function timeline(slots,isToday){
+  const pct=m=>((m-21*60)/120*100).toFixed(2)+'%';
+  let h='<div class="timeline" aria-hidden="true">'+slots.map(s=>`<i style="left:${pct(mins(s.from))};width:calc(${pct(mins(s.to))} - ${pct(mins(s.from))})"></i>`).join('');
+  if(isToday&&nowMin()>=21*60&&nowMin()<=23*60)h+=`<span class="now" style="left:${pct(nowMin())}"></span>`;
+  return h+'</div><div class="tl-scale" aria-hidden="true"><span>21:00</span><span>21:30</span><span>22:00</span><span>22:30</span><span>23:00</span></div>';
+}
+function clockNote(){
+  const n=new Date(),h=n.getHours(),m=nowMin(),hm=pad(h)+':'+pad(n.getMinutes());
+  if(m>=23*60||h<5)return `<div class="note night">Il est ${hm}. Le planning s'arrête à 23:00 : pose tout et va dormir. C'est pendant le sommeil que ton cerveau range ce que tu as révisé.</div>`;
+  if(m>=21*60)return `<div class="note">Il est ${hm} : c'est l'heure de réviser. Fin au plus tard à 23:00.</div>`;
+  return'';
+}
+function dayLabel(d){const t=today();return d===t?'Ce soir':d===addDays(t,1)?'Demain soir':niceDate(d)}
+function renderPlan(){
+  const el=$('#v-plan'),plan=buildPlan();
+  let h='<div class="wrap">';
+  if(!plan.length){h+=`<div class="empty"><h2>Aucun contrôle à préparer</h2><p class="muted">Dès que tu donnes la date d'un contrôle sur un cours, le planning se remplit tout seul jusqu'au jour J : séances de 25 minutes entre 21:00 et 23:00.</p><div class="row"><a class="btn" href="#cours">Voir mes cours</a></div></div></div>`;el.innerHTML=h;return}
+  h+=clockNote();
+  plan.forEach(p=>{
+    const all=p.slots.length,done=p.slots.filter(s=>isDone(p.date,s)).length;
+    h+=`<div class="evening"><div class="row between"><h3>${escH(dayLabel(p.date))} · 21:00 – ${p.slots.length&&p.slots[p.slots.length-1].to}</h3><span class="pill ${done===all?'ok':''}">${done}/${all} fait</span></div>${timeline(p.slots,p.date===today())}${p.slots.map(s=>slotRow(p.date,s,p.date===today())).join('')}${p.overflow?`<p class="small muted">+ ${p.overflow} séance(s) reportée(s) : priorité aux contrôles les plus proches.</p>`:''}</div>`;
+  });
+  h+=`<div class="row"><button class="btn" id="ics" hidden>📅 Ajouter à mon agenda (.ics)</button></div></div>`;
+  el.innerHTML=h;
+  dlP.then(d=>{const b=$('#ics');if((d||D.full)&&b)b.hidden=false});
+}
+const dlP=window.claude?claude.use('downloads'):Promise.resolve(null);
+/* enregistrer un fichier : dans le dossier Mes cours (app de bureau) ou en téléchargement */
+async function saveFile(filename,data,dir){
+  if(D.full){try{const root=dir||dev.root;await D.desk.fs.mkdir(root,{recursive:true});const p=root+'/'+filename;await D.desk.fs.writeFile(p,data,'utf8');toast('Fichier enregistré : '+p.replace(/\//g,'\\'),'ok');return true}catch(e){toast('Enregistrement impossible : '+e.message,'err');return false}}
+  const d=await dlP;if(!d){toast('L\'enregistrement de fichiers n\'est pas disponible ici. Ouvre l\'app depuis claude.ai.','err');return false}
+  try{await d.save({filename,data});return true}catch(e){toast('Enregistrement annulé.','');return false}
+}
+async function exportIcs(){
+  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Cahier Malin Notion//FR','CALSCALE:GREGORIAN'],stamp=new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z';
+  buildPlan().forEach(p=>p.slots.forEach(s=>{const dd=p.date.replace(/-/g,'');L.push('BEGIN:VEVENT',`UID:${p.date}-${s.c.id}-${s.type}@cahier-malin-notion`,`DTSTAMP:${stamp}`,`DTSTART:${dd}T${s.from.replace(':','')}00`,`DTEND:${dd}T${s.to.replace(':','')}00`,`SUMMARY:${(TASKS[s.type].label+' · '+(s.c.subject||s.c.title||'')).replace(/[,;\n]/g,' ')}`,`DESCRIPTION:${TASKS[s.type].how.replace(/[,;]/g,' ')}`,'BEGIN:VALARM','TRIGGER:-PT5M','ACTION:DISPLAY','DESCRIPTION:Révision dans 5 minutes','END:VALARM','END:VEVENT')}));
+  L.push('END:VCALENDAR');
+  if(await saveFile('planning-revisions.ics',L.join('\r\n'))&&!D.full)toast('Planning exporté : ouvre le fichier pour l\'ajouter à ton agenda.','ok');
+}
+
+/* ---------- accueil : mes cours par matière ---------- */
+function coursePills(c){
+  const p=[];
+  p.push(c.status==='ready'?'<span class="pill blue">Rédigé</span>':'<span class="pill">Brouillon</span>');
+  if(c.kit)p.push('<span class="pill ok">Révisions prêtes</span>');
+  if(c.examDate&&c.examDate>=today()){const k=diffDays(today(),c.examDate);p.push(`<span class="pill ${k<=2?'red':'warn'}">Contrôle ${k===0?'aujourd\'hui':k===1?'demain':'dans '+k+' j'}</span>`)}
+  if(c.notion)p.push('<span class="pill">Dans Notion</span>');
+  if(c.quizBest!=null)p.push(`<span class="pill">Quiz ${+c.quizBest} %</span>`);
+  if(c.audio)p.push('<span class="pill">🎙️ Audio</span>');
+  return p.join('');
+}
+function renderHome(){
+  const el=$('#v-cours');let h='<div class="wrap">';
+  const t=buildPlan().find(p=>p.date===today());
+  if(t)h+=`<div class="tonight"><span class="label">Ce soir · 21:00 – 23:00</span><h2>${t.slots.length} séance${t.slots.length>1?'s':''} de 25 min</h2><ol>${t.slots.map(s=>`<li>${s.from} · ${escH(TASKS[s.type].label)} — ${escH(s.c.title||s.c.subject||'')}</li>`).join('')}</ol><p style="margin:10px 0 0"><a href="#planning">Voir le planning →</a></p></div>`;
+  h+=`<div class="row between" style="margin:8px 0"><h2 style="font:800 26px Archivo,sans-serif;margin:0">Mes cours</h2><button class="btn main" data-new>+ Nouveau cours</button></div>`;
+  if(S.loaded&&!notionRoot())h+=`<div class="note">Bienvenue ! Pour envoyer tes cours dans <b>ton</b> Notion, choisis ta page et tes matières. <a href="#reglages">Configurer mon Notion →</a></div>`;
+  if(S.loaded&&S.courses.length)h+=`<p class="small muted" style="margin:4px 0 0">${escH(autoLine())}</p>`;
+  if(!S.loaded)h+='<p class="muted">Chargement de tes cours…</p>';
+  else if(!S.courses.length)h+=`<div class="empty"><h2>Ton cahier est vide</h2><p class="muted">Au début du cours, ouvre « Écrire un cours » : tape, dicte ou enregistre le cours. À la fin, l'IA les remet au propre, prépare fiches, flashcards et quiz, et tu envoies le tout dans Notion.</p><div class="row"><button class="btn main" data-new>Écrire mon premier cours</button><a class="btn" href="#reglages">Importer d'anciens cours</a></div></div>`;
+  else{
+    const g={};S.courses.slice().sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||'')||(b.updatedAt||0)-(a.updatedAt||0)).forEach(c=>{(g[c.subject||'Divers']=g[c.subject||'Divers']||[]).push(c)});
+    Object.keys(g).sort((a,b)=>a.localeCompare(b,'fr')).forEach(k=>{
+      h+=`<div class="subject"><h2>${escH(k)} <small>${g[k].length} cours</small></h2><div class="clist">${g[k].map(c=>`<button class="card" data-open="${escH(c.id)}"><span class="small muted">${escH(niceDate(c.createdAt))}</span><strong>${escH(c.title||'Cours sans titre')}</strong><span class="pills">${coursePills(c)}</span></button>`).join('')}</div></div>`;
+    });
+  }
+  el.innerHTML=h+'</div>';
+}
+
+/* ---------- un cours : le cours, fiches, flashcards, quiz, méthodes ---------- */
+const canSpeak='speechSynthesis' in window;
+function speak(text){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='fr-FR';const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.startsWith('fr'));if(v)u.voice=v;speechSynthesis.speak(u)}catch(e){}}
+function renderCourse(){
+  const c=cur(),el=$('#v-course');
+  if(!c){el.innerHTML='<div class="wrap"><div class="empty"><h2>Cours introuvable</h2><div class="row"><a class="btn" href="#cours">Retour à mes cours</a></div></div></div>';return}
+  const tabs=[['cours','Le cours'],['fiches','Fiches'],['flashcards','Flashcards'],['quiz','Quiz'],['methodes','Méthodes']];
+  let h=`<div class="wrap"><a class="btn ghost" href="#cours" style="display:inline-flex;align-items:center">← Mes cours</a>
+  <div class="head"><span class="label">${escH(c.subject||'Matière à préciser')} · ${escH(niceDate(c.createdAt))}${c.minutes?' · '+Math.round(c.minutes)+' min enregistrées':''}</span><h1>${escH(c.title||'Cours sans titre')}</h1><div class="pills">${coursePills(c)}</div>
+  <div class="row"><button class="btn" data-edit>✏️ Modifier</button><button class="btn" data-send>📤 Envoyer vers Notion</button><button class="btn" data-exam>📅 ${c.examDate?'Changer la date du contrôle':'Date du contrôle'}</button>${c.kit?'<button class="btn" data-kit>🔄 Refaire les révisions</button>':''}</div></div>
+  <div class="tabs" role="tablist">${tabs.map(([k,l])=>`<button role="tab" aria-selected="${S.tab===k}" class="${S.tab===k?'on':''}" data-tab="${k}">${l}</button>`).join('')}</div>`;
+  if(S.tab==='cours')h+=courseView(c);
+  else if(!c.kit)h+=`<div class="empty"><h2>Révisions pas encore préparées</h2><p class="muted">L'IA crée à partir de ton cours des fiches, des flashcards, un quiz, des moyens mnémotechniques et une carte mentale. Avec une date de contrôle, le planning du soir se remplit aussi.</p><div class="row"><button class="btn main" data-exam>Donner la date du contrôle</button><button class="btn" data-kit>Préparer sans date</button></div></div>`;
+  else if(S.tab==='fiches')h+=fichesView(c);
+  else if(S.tab==='flashcards')h+=fcView(c);
+  else if(S.tab==='quiz')h+=quizView(c);
+  else h+=methodsView(c);
+  el.innerHTML=h+'</div>';
+}
+function courseView(c){
+  let h=`<div class="paper read"><div class="viewer">${sanitize(c.html,true)||'<p class="muted">Ce cours est vide. Clique sur « Modifier » pour l\'écrire.</p>'}</div></div>`;
+  h+=`<div class="panel"><h3>Une question sur ce cours ?</h3><form class="ask" id="askF"><input id="askQ" placeholder="ex. Je ne comprends pas la différence entre…" autocomplete="off" aria-label="Ta question"><button class="btn main">Demander</button></form><div class="answer" id="askA" role="status"></div></div>`;
+  if(c.raw)h+=`<details class="panel"><summary>Texte d'origine (avant la rédaction par l'IA)</summary><div class="answer small" id="rawTxt"></div></details>`;
+  h+=`<div class="panel"><h3>Fichiers du cours</h3><p class="small muted" style="margin:0 0 10px">${D.full?'Rangés automatiquement dans <b>'+escH(folderLabel(c))+'</b> : cours.md, fiches et quiz.md, texte d\'origine et audio.':'Le cours en Markdown, pour le garder ou l\'ouvrir dans un autre logiciel.'}</p><div class="row">${D.full?'<button class="btn" data-folder>📂 Ouvrir le dossier</button>':''}<button class="btn" data-md="cours">⬇ cours.md</button>${c.kit?'<button class="btn" data-md="kit">⬇ fiches et quiz.md</button>':''}</div></div>`;
+  h+=`<div class="row">${canSpeak&&c.notes?'<button class="btn" data-speak="resume">🔊 Écouter le résumé</button>':''}<button class="btn danger" data-del>Supprimer ce cours</button></div>`;
+  return h;
+}
+function fichesView(c){
+  return `<div class="fiches">${arr(c.kit.fiches).map((f,i)=>`<div class="fiche" style="--fc:${COLORS[i%COLORS.length]}"><span class="label">Fiche ${i+1}/${c.kit.fiches.length}</span><h3>${fmt(f.titre)}</h3><ul>${arr(f.essentiel).map(x=>`<li>${fmt(x)}</li>`).join('')}</ul>${f.astuce?`<div class="astuce"><b>Astuce :</b> ${fmt(f.astuce)}</div>`:''}${canSpeak?`<div class="row" style="margin-top:8px"><button class="btn ghost" data-speak="fiche" data-i="${i}">🔊 Écouter</button></div>`:''}</div>`).join('')}</div><div class="row" style="margin-top:14px"><button class="btn main" data-tab="flashcards">Je passe aux flashcards</button></div>`;
+}
+function fcStart(c){const cards=arr(c.kit.flashcards);c.cards=c.cards||{};FC={id:c.id,order:shuffle(cards.map((_,i)=>i)).sort((a,b)=>(c.cards[a]||1)-(c.cards[b]||1)),i:0,flip:false,ok:0}}
+function fcView(c){
+  if(!FC||FC.id!==c.id)fcStart(c);
+  const cards=arr(c.kit.flashcards),total=FC.order.length,mastered=cards.filter((_,i)=>(c.cards[i]||1)>=3).length;
+  if(FC.i>=total)return `<div class="panel" style="text-align:center"><span class="label">Série terminée</span><div class="score">${FC.ok}/${total}</div><p>${FC.ok===total?'Parfait, tout est su.':'Les cartes ratées reviendront en premier la prochaine fois.'} ${mastered}/${total} cartes maîtrisées au total.</p><div class="row" style="justify-content:center"><button class="btn main" data-fcr>Recommencer</button><button class="btn" data-tab="quiz">Passer au quiz</button></div></div>`;
+  const idx=FC.order[FC.i],card=cards[idx],box=c.cards[idx]||1;
+  return `<div class="fc"><div class="row between" style="width:100%"><span class="small muted">Carte ${FC.i+1}/${total}</span><span class="boxes">${[1,2,3].map(b=>`<span class="${box>=b?'on':''}">${['À revoir','En cours','Maîtrisée'][b-1]}</span>`).join('')}</span></div>
+  <div class="bar"><i style="width:${(FC.i/total*100).toFixed(1)}%"></i></div>
+  <button class="flip${FC.flip?' back':''}" data-flip aria-label="Retourner la carte"><span class="label">${FC.flip?'Réponse':'Question'}</span><div>${fmt(FC.flip?card.r:card.q)}</div>${FC.flip?'':'<span class="small muted">Réponds dans ta tête, puis touche la carte</span>'}</button>
+  <div class="row" ${FC.flip?'':'hidden'}><button class="btn" data-fc="0">À revoir</button><button class="btn main" data-fc="1">Je savais</button></div>
+  <p class="small muted">Clavier : Espace pour retourner, 1 = à revoir, 2 = je savais.</p></div>`;
+}
+function fcAnswer(ok){const c=cur(),idx=FC.order[FC.i];c.cards[idx]=ok?Math.min(3,(c.cards[idx]||1)+1):1;if(ok){FC.ok++;addXp(5)}FC.i++;FC.flip=false;saveCourse(c,true);renderCourse()}
+function quizView(c){
+  const qs=arr(c.kit.quiz);
+  if(!QZ||QZ.id!==c.id)QZ={id:c.id,order:shuffle(qs.map((_,i)=>i)),i:0,score:0,combo:0,pick:null};
+  if(QZ.i>=QZ.order.length){
+    const pct=Math.round(QZ.score/QZ.order.length*100);
+    if(c.quizBest==null||pct>c.quizBest){c.quizBest=pct;saveCourse(c)}
+    return `<div class="panel" style="text-align:center"><span class="label">Résultat</span><div class="score">${pct} %</div><p>${pct>=80?'Excellent, tu es prêt.':pct>=50?'Bonne base. Refais les flashcards puis retente.':'Relis les fiches, puis retente : ça va venir.'} Meilleur score : ${+c.quizBest} %.</p><div class="row" style="justify-content:center"><button class="btn main" data-qzr>Rejouer</button><button class="btn" data-tab="fiches">Relire les fiches</button></div></div>`;
+  }
+  const q=qs[QZ.order[QZ.i]],good=Number(q.bonne);
+  return `<div class="row between"><span class="small muted">Question ${QZ.i+1}/${QZ.order.length} · score ${QZ.score}</span>${QZ.combo>=2?`<span class="pill ok">Série de ${QZ.combo} !</span>`:''}</div>
+  <div class="bar" style="margin-top:8px"><i style="width:${(QZ.i/QZ.order.length*100).toFixed(1)}%"></i></div>
+  <h2 style="font:700 21px/1.3 Archivo,sans-serif;margin:16px 0 4px">${fmt(q.question)}</h2>
+  <div class="choices">${arr(q.choix).map((ch,i)=>{let cls='';if(QZ.pick!=null){if(i===good)cls='good';else if(i===QZ.pick)cls='bad'}return `<button class="choice ${cls}" data-pick="${i}" ${QZ.pick!=null?'aria-disabled="true"':''}><b>${'ABCD'[i]}</b><span>${fmt(ch)}</span></button>`}).join('')}</div>
+  ${QZ.pick!=null?`<div class="panel"><p style="margin:0"><b>${QZ.pick===good?'Bonne réponse.':'Pas tout à fait.'}</b> ${fmt(q.explication)}</p></div><div class="row"><button class="btn main" data-qzn>Question suivante</button></div>`:''}`;
+}
+function methodsView(c){
+  const k=c.kit,mm=k.carte_mentale||{};let h='';
+  if(arr(k.mnemos).length)h+=`<div class="panel"><span class="label">Mémoire</span><h3>Moyens mnémotechniques</h3>${k.mnemos.map(m=>`<div style="margin:8px 0"><b>${fmt(m.pour)}</b><div class="astuce">${fmt(m.astuce)}</div></div>`).join('')}</div>`;
+  if(arr(k.feynman).length)h+=`<div class="panel"><span class="label">Méthode Feynman</span><h3>Explique-le à voix haute</h3><p class="small muted">Sans regarder tes notes. Là où tu bloques, c'est ce qu'il faut revoir.</p><ol>${k.feynman.map(f=>`<li>${fmt(f)}</li>`).join('')}</ol></div>`;
+  if(mm.centre)h+=`<div class="panel"><span class="label">Carte mentale</span><div class="mm"><div class="mm-c">${fmt(mm.centre)}</div><div class="mm-b">${arr(mm.branches).map((b,i)=>`<div style="--fc:${COLORS[i%COLORS.length]}"><h4>${fmt(b.titre)}</h4>${arr(b.feuilles).map(f=>`<span>${fmt(f)}</span>`).join('')}</div>`).join('')}</div></div><p class="small muted">Défi : cache l'écran et redessine-la sur une feuille en 5 minutes.</p></div>`;
+  h+=`<div class="panel"><span class="label">Comment réviser</span><h3>Les 4 règles qui marchent</h3><ul><li><b>Se tester plutôt que relire.</b> Les flashcards et le quiz forcent le cerveau à aller chercher l'info.</li><li><b>Espacer.</b> Le planning revient sur chaque cours à J+1, J+3, J+6… c'est voulu.</li><li><b>Courtes séances.</b> 25 minutes concentré, téléphone retourné, puis 5 minutes de pause.</li><li><b>Dormir.</b> Le sommeil fixe les souvenirs : rien après 23:00.</li></ul></div>`;
+  return h;
+}
+
+/* ---------- navigation ---------- */
+function rerender(){const v=viewOf();if(v==='cours')renderHome();else if(v==='course')renderCourse();else if(v==='plan')renderPlan();else if(v==='set')renderSettings()}
+function viewOf(){const h=location.hash.slice(1);return h.startsWith('cours-')?'course':h==='ecrire'?'ecrire':h==='planning'?'plan':h==='reglages'?'set':'cours'}
+let lastView=null;
+function route(){
+  const h=location.hash.slice(1),v=viewOf();
+  if(lastView==='ecrire'&&v!=='ecrire'){syncEditing();if(dict&&dict.active())dict.stop().catch(()=>{})}
+  if(v==='course'){const id=h.slice(6);if(S.current!==id){S.current=id;S.tab=S.pendingTab||'cours';FC=null;QZ=null}else if(S.pendingTab)S.tab=S.pendingTab;S.pendingTab=null}
+  ['cours','course','plan','ecrire','set'].forEach(x=>$('#v-'+x).hidden=x!==v);
+  const nv={cours:'cours',course:'cours',plan:'planning',ecrire:'ecrire',set:'reglages'}[v];
+  document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===nv));
+  if(v==='ecrire'&&!editing)newCourse();
+  lastView=v;rerender();updateRecInfo();scrollTo(0,0);
+}
+addEventListener('hashchange',route);
+
+/* ---------- événements ---------- */
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button,[data-open]');if(!t||t.closest('#tb'))return;
+  const c=cur();
+  if(t.hasAttribute('data-new')){editing=null;newCourse();location.hash='ecrire';return}
+  if(t.dataset.open){const id=t.dataset.open,tab=t.dataset.tab||'cours';if(location.hash==='#cours-'+id){S.tab=tab;renderCourse()}else{S.pendingTab=tab;location.hash='cours-'+id}return}
+  if(t.id==='ics'){exportIcs();return}
+  if(!c||viewOf()!=='course')return;
+  if(t.dataset.tab){S.tab=t.dataset.tab;renderCourse();return}
+  if(t.hasAttribute('data-edit')){openEditor(c);location.hash='ecrire';return}
+  if(t.hasAttribute('data-send')){openSend(c);return}
+  if(t.hasAttribute('data-exam')){askExam(c,c.notes&&c.notes.date_controle_mentionnee);return}
+  if(t.hasAttribute('data-kit')){generateKit(c);return}
+  if(t.hasAttribute('data-folder')){openFolder(c);return}
+  if(t.dataset.md){if(D.full){exportCourse(c).then(()=>toast('Fichiers mis à jour dans '+folderLabel(c),'ok')).catch(e=>toast('Rangement impossible : '+e.message,'err'));return}const k=t.dataset.md==='kit';saveFile(k?'fiches et quiz.md':'cours.md',k?kitMd(c):courseMd(c));return}
+  if(t.hasAttribute('data-flip')){FC.flip=!FC.flip;renderCourse();return}
+  if(t.dataset.fc){fcAnswer(t.dataset.fc==='1');return}
+  if(t.hasAttribute('data-fcr')){FC=null;renderCourse();return}
+  if(t.dataset.pick!=null&&QZ&&QZ.pick==null){const q=c.kit.quiz[QZ.order[QZ.i]];QZ.pick=Number(t.dataset.pick);if(QZ.pick===Number(q.bonne)){QZ.score++;QZ.combo++;addXp(10+Math.min(QZ.combo,5)*2)}else QZ.combo=0;renderCourse();return}
+  if(t.hasAttribute('data-qzn')){QZ.i++;QZ.pick=null;renderCourse();return}
+  if(t.hasAttribute('data-qzr')){QZ=null;renderCourse();return}
+  if(t.dataset.speak&&canSpeak){if(speechSynthesis.speaking){speechSynthesis.cancel();return}
+    if(t.dataset.speak==='resume'&&c.notes)speak(plain(c.notes.resume)+'. '+arr(c.notes.a_retenir).map(plain).join('. '));
+    else{const f=c.kit.fiches[+t.dataset.i];if(f)speak(plain(f.titre)+'. '+arr(f.essentiel).map(plain).join('. ')+'. '+plain(f.astuce||''))}return}
+  if(t.hasAttribute('data-del')){
+    if(t.dataset.armed){clearTimeout(timers[c.id]);clearTimeout(expT[c.id]);Store.del(c.id);trashFolder(c);S.courses=S.courses.filter(x=>x!==c);if(editing===c)editing=null;toast(D.full&&c.folder?'Cours supprimé. Son dossier est dans Mes cours\\_Corbeille.':'Cours supprimé.','');location.hash='cours';return}
+    t.dataset.armed='1';t.textContent='Confirmer : supprimer définitivement';setTimeout(()=>{if(t.isConnected){delete t.dataset.armed;t.textContent='Supprimer ce cours'}},4000);
+  }
+});
+document.addEventListener('change',e=>{
+  const t=e.target;if(!t.matches('.slot input[type=checkbox]'))return;
+  const c=S.courses.find(x=>x.id===t.dataset.cid);if(!c)return;
+  c.done=c.done||{};const k=t.dataset.date+'|'+t.dataset.type;
+  if(t.checked){c.done[k]=true;addXp(15)}else delete c.done[k];
+  saveCourse(c,true);renderPlan();
+});
+document.addEventListener('toggle',e=>{if(e.target.matches('details')&&e.target.open){const r=$('#rawTxt'),c=cur();if(r&&c)r.textContent=c.raw||''}},true);
+document.addEventListener('submit',async e=>{
+  if(e.target.id!=='askF')return;e.preventDefault();
+  const q=$('#askQ').value.trim(),c=cur(),out=$('#askA');if(!q||!c)return;
+  const src=c.notes?JSON.stringify(c.notes):plainOf(c.html).slice(0,40000);
+  const prompt=`Tu es un professeur bienveillant. Réponds en français, simplement et en moins de 150 mots, à la question d'un élève de BTS SIO sur ce cours. Donne un exemple concret si utile. Pas de markdown.\n\nCOURS :\n${src}\n\nQUESTION : ${q}`;
+  out.textContent='Réflexion…';
+  if(useLocalAi()){try{out.textContent=await localAi(prompt,{json:false,onText:({text})=>{out.textContent=text}})}catch(err){out.textContent=aiErr(err)}return}
+  const sample=await sampleP;if(!sample){out.textContent=aiErr({code:'no_ai'});return}
+  try{await sample(prompt,{cache:false,onText:({text})=>{out.textContent=text}})}
+  catch(err){out.textContent=err&&err.text?err.text:aiErr(err)}
+});
+document.addEventListener('keydown',e=>{
+  if(viewOf()!=='course'||S.tab!=='flashcards'||!FC||e.target.matches('input,textarea,select'))return;
+  if(e.key===' '){e.preventDefault();FC.flip=!FC.flip;renderCourse()}
+  else if(FC.flip&&e.key==='1')fcAnswer(false);
+  else if(FC.flip&&e.key==='2')fcAnswer(true);
+});
+
+/* ====================================================================
+   APP DE BUREAU (Windows) : moteur local, enregistrement, dossiers
+   Installée depuis l'app Claude pour ordinateur, avec l'accès à l'ordinateur,
+   la page lance le moteur Python de Cahier Malin : micro + Whisper sans internet,
+   audio en Opus, IA locale Ollama, rangement dans Mes cours\<Matière>\<date - titre>.
+   ==================================================================== */
+targets=[];
+const D={desk:null,full:false,perm:'unavailable',install:'unavailable',plat:'',home:'',data:'',eng:null,state:'off',buf:'',errLog:'',err:'',st:null,mics:null,model:null,ollama:null,pull:null,ai:{},log:''};
+const dev=Object.assign({py:'py -3.13',mic:'',model:'small',lang:'auto',root:'',ai:'claude'},ls.get('cmn-dev')||{});
+const saveDev=()=>ls.set('cmn-dev',dev);
+const R={on:false,finishing:false,course:null,sid:null,t0:0,level:0,backlog:0,folder:null,tick:null};
+const WMODELS={base:'Rapide',small:'Recommandé',medium:'Très précis, lent'};
+const WLANGS={auto:'Détection automatique',fr:'Français',en:'Anglais',es:'Espagnol',de:'Allemand',it:'Italien'};
+const winPath=p=>D.plat==='win32'?String(p).replace(/\//g,'\\'):String(p);
+
+function send(o){if(D.eng)D.eng.stdin.write(JSON.stringify(o)+'\n').catch(()=>{})}
+async function startEngine(){
+  if(!D.full||D.eng)return;
+  const src=$('#engine-py').textContent.replace(/^\s+/,'');
+  const dir=D.data+'/moteur',file=dir+'/moteur.py',fs=D.desk.fs;
+  D.state='starting';D.err='';D.errLog='';D.st=null;renderEng();
+  try{await fs.mkdir(dir,{recursive:true});let old='';try{old=await fs.readFile(file,'utf8')}catch(e){}if(old!==src)await fs.writeFile(file,src,'utf8')}
+  catch(e){D.state='error';D.err='Impossible d\'écrire le moteur : '+e.message;renderEng();return}
+  let p;
+  try{p=D.desk.childProcess.spawn(dev.py+' -X utf8 -u "'+winPath(file)+'"',[],{shell:true,cwd:dir})}
+  catch(e){D.state='error';D.err=e.message;renderEng();return}
+  D.eng=p;D.buf='';
+  const helloT=setTimeout(()=>{if(D.eng===p&&D.state==='starting'){D.state='error';D.err='Python ne répond pas. Vérifie la commande Python dans les réglages ci-dessous.';renderEng()}},20000);
+  p.stdout.on('data',ch=>{D.buf+=ch;let i;while((i=D.buf.indexOf('\n'))>=0){const line=D.buf.slice(0,i).trim();D.buf=D.buf.slice(i+1);if(line){let m=null;try{m=JSON.parse(line)}catch(e){}if(m){if(m.ev==='hello')clearTimeout(helloT);onEng(m)}}}});
+  p.stderr.on('data',ch=>{D.errLog=(D.errLog+ch).slice(-4000)});
+  p.on('error',e=>{clearTimeout(helloT);if(D.eng===p)D.eng=null;D.state='error';D.err=e.message;renderEng()});
+  p.on('exit',code=>{
+    clearTimeout(helloT);if(D.eng!==p)return;D.eng=null;D.state=code?'error':'off';
+    if(code)D.err='Python s\'est arrêté (code '+code+'). '+(/n'est pas reconnu|not recognized|introuvable|No suitable Python/i.test(D.errLog)?'Python 3.13 est introuvable : installe-le depuis python.org, ou indique le chemin de python.exe ci-dessous.':D.errLog.trim().split('\n').slice(-3).join(' '));
+    if(R.on||R.finishing){R.on=false;R.finishing=false;setRecUi();toast('Le moteur s\'est arrêté pendant l\'enregistrement. Ce qui a été transcrit est gardé.','err')}
+    for(const k in D.ai){D.ai[k].rej({code:'engine'})}D.ai={};
+    renderEng();
+  });
+}
+function stopEngine(){if(D.eng){const p=D.eng;D.eng=null;p.kill().catch(()=>{})}D.state='off';D.st=null}
+function onEng(m){
+  switch(m.ev){
+    case'hello':D.state='ready';D.st=m;D.err='';renderEng();
+      if(m.modules&&m.modules.sounddevice)send({cmd:'mics'});
+      if(m.modules&&m.modules.faster_whisper)send({cmd:'preload',model:dev.model,lang:dev.lang});
+      send({cmd:'ai_status'});
+      break;
+    case'mics':D.mics=m;renderEng();break;
+    case'model':D.model=m;renderEng();if(m.state==='error')toast(m.error,'err');updateRecInfo();break;
+    case'started':R.on=true;R.finishing=false;R.t0=Date.now();setRecUi();break;
+    case'rec_error':R.on=false;R.finishing=false;setRecUi();setStatus(m.error,'err');toast(m.error,'err');break;
+    case'level':R.level=m.level;R.backlog=m.backlog;updateRecInfo();break;
+    case'text':appendTranscript(m.text);break;
+    case'warn':toast(m.error,'err');break;
+    case'stopped':{const c=R.course;R.finishing=false;setRecUi();
+      if(R.folder){send({cmd:'finalize',folder:R.folder});setStatus('Transcription terminée ✓ L\'audio est en train d\'être rangé dans le dossier du cours.','ok')}
+      else setStatus('Transcription terminée ✓','ok');
+      if(c)saveCourse(c);break}
+    case'audio':if(m.ok){const c=R.course;if(c){c.audio=true;saveCourse(c)}toast('Audio rangé : '+m.path+(m.minutes?' ('+m.minutes+' min)':''),'ok')}else if(m.error&&!/Aucune prise/.test(m.error))toast('Audio non rangé : '+m.error,'err');renderEng();break;
+    case'discarded':D.st&&(D.st.leftover=0);renderEng();break;
+    case'ai_status':D.ollama=m;renderEng();break;
+    case'pull':D.pull=m;renderEng();break;
+    case'ai_delta':{const j=D.ai[m.id];if(j&&j.onText)j.onText({text:m.text});break}
+    case'ai_done':{const j=D.ai[m.id];if(!j)break;delete D.ai[m.id];if(m.error==='cancelled')j.rej({code:'cancelled'});else if(m.error&&!m.text)j.rej({code:'local_ai',message:m.error});else j.res(m.text||'');break}
+    case'error':D.log=(D.log+'\n'+(m.cmd||'')+' : '+m.error).slice(-2000);renderEng();break;
+  }
+}
+function localAi(prompt,o){
+  o=o||{};
+  return new Promise((res,rej)=>{
+    if(!D.eng)return rej({code:'engine'});
+    const id='a'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+    D.ai[id]={res,rej,onText:o.onText};
+    send({cmd:'ai',id,prompt,json:o.json!==false,max_tokens:4096});
+    if(o.signal)o.signal.addEventListener('abort',()=>{send({cmd:'ai_cancel',id});if(D.ai[id]){delete D.ai[id];rej({code:'cancelled'})}});
+  });
+}
+
+/* ---------- barres compactes : menus déroulants ---------- */
+tb.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&!b.dataset.pop&&b.closest('.pop')&&!b.closest('#pLink'))closePops()});
+document.addEventListener('selectionchange',()=>{const l=$('#headLbl');if(!l)return;const bl=curBlock();l.textContent=({H1:'Titre 1',H2:'Titre 2',H3:'Titre 3',H4:'Titre 4',BLOCKQUOTE:'Citation'})[bl&&bl.tagName]||'Texte'});
+$('#moreBtn').addEventListener('click',()=>{const p=$('#pMore'),o=p.classList.contains('open');closePops();p.classList.toggle('open',!o);$('#moreBtn').setAttribute('aria-expanded',!o)});
+$('#pMore').addEventListener('click',e=>{if(e.target.closest('button')){closePops();$('#moreBtn').setAttribute('aria-expanded','false')}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.querySelector('.pop.open'))closePops()});
+
+/* ---------- enregistrement du cours au micro (moteur local) ---------- */
+function recReady(){return D.full&&D.state==='ready'&&D.st&&D.st.modules&&D.st.modules.sounddevice&&D.st.modules.faster_whisper&&D.st.modules.numpy}
+async function recToggle(){
+  if(R.finishing)return;
+  if(R.on){send({cmd:'stop'});if(R.course)R.course.minutes=(R.course.minutes||0)+(Date.now()-R.t0)/60000;R.on=false;R.finishing=true;setRecUi();setStatus('Fin de la transcription des dernières phrases…','');return}
+  if(!D.full){const m=D.desk&&D.desk.fs?'Autorise d\'abord l\'accès à l\'ordinateur dans Réglages pour enregistrer avec Whisper.':'L\'enregistrement du cours avec Whisper marche dans l\'app Windows installée (Réglages > Application Windows). Ici, utilise « 🎤 Dicter ».';setStatus(m,'err');toast(m,'err');return}
+  if(!recReady()){toast('L\'enregistrement n\'est pas prêt : va dans Réglages > Enregistrement du cours.','err');location.hash='reglages';return}
+  syncEditing();const c=editing;if(!c)return;
+  if(!S.courses.includes(c)){S.courses.push(c);saveCourse(c)}
+  if(R.course!==c){R.course=c;R.sid=Date.now().toString(36)}
+  try{R.folder=await courseFolder(c)}catch(e){R.folder=null}
+  R.finishing=false;send({cmd:'start',mic:dev.mic===''?null:+dev.mic,model:dev.model,lang:dev.lang});
+  setStatus(D.model&&D.model.state==='ready'?'J\'écoute le cours… le texte arrive dans la feuille toutes les 20 à 40 secondes.':'Préparation de la voix (le modèle Whisper se télécharge la première fois, environ 460 Mo)…','');
+}
+$('#rec').addEventListener('click',recToggle);
+function setRecUi(){
+  const b=$('#rec');
+  b.hidden=false;
+  b.setAttribute('aria-pressed',R.on);b.disabled=R.finishing;
+  b.textContent=R.on?'⏸ Pause':R.finishing?'⏳ Transcription…':(R.course&&R.course===editing&&R.course.minutes?'⏺ Reprendre':'⏺ Enregistrer');
+  $('#navrec').hidden=!R.on;
+  clearInterval(R.tick);if(R.on)R.tick=setInterval(updateRecInfo,1000);
+  updateRecInfo();
+}
+function updateRecInfo(){
+  const el=$('#recInfo');if(!el)return;
+  if(viewOf()!=='ecrire'||!editing){el.textContent='';return}
+  const words=((ed.innerText||'').match(/\S+/g)||[]).length;
+  const live=R.on&&R.course===editing,dLive=dictT0>0;
+  let ms=(editing.minutes||0)*60000;if(live)ms+=Date.now()-R.t0;if(dLive)ms+=Date.now()-dictT0;
+  const s=Math.floor(ms/1000),tm=(s>=3600?Math.floor(s/3600)+':':'')+pad(Math.floor(s/60)%60)+':'+pad(s%60);
+  let h='';
+  if(ms>0||live||dLive)h+=`<span title="Durée enregistrée">⏱ ${tm}</span>`;
+  if(live)h+=`<span class="meter" title="Niveau du micro"><i style="width:${Math.round(Math.min(1,R.level)*100)}%"></i></span>`;
+  h+=`<span>${words.toLocaleString('fr-FR')} mot${words>1?'s':''}</span>`;
+  if(live&&R.backlog>45)h+=`<span title="Audio pas encore transcrit">⌛ ${R.backlog} s</span>`;
+  el.innerHTML=h;
+}
+function appendTranscript(text){
+  const c=R.course;text=String(text||'').trim();if(!c||!text)return;
+  const live=editing===c;let root;
+  if(live)root=ed;else{root=document.createElement('div');root.innerHTML=sanitize(c.html||'')}
+  let p=root.querySelector('p[data-rec="'+R.sid+'"]');
+  if(!p){p=document.createElement('p');p.dataset.rec=R.sid;root.append(p)}
+  const t=p.textContent.replace(/\u00a0/g,' ');p.textContent=(t&&!/\s$/.test(t)?t+' ':t)+text;
+  if(live)save();else{c.html=root.innerHTML;saveCourse(c,true)}
+  if(R.folder)D.desk.fs.appendFile(R.folder+'/transcription.txt',text+'\n','utf8').catch(()=>{});
+}
+
+/* ---------- rangement : Mes cours\<Matière>\<date - titre>\ ---------- */
+const cleanName=(s,fb)=>{s=String(s||'').replace(/[<>:"/\\|?*\x00-\x1f]/g,' ').replace(/\*\*/g,'').replace(/\s+/g,' ').trim().replace(/^[ .]+|[ .]+$/g,'').slice(0,70);return s||fb};
+const wantRel=c=>cleanName(c.subject,'Sans matière')+'/'+(c.createdAt||today())+' - '+cleanName(c.title,'Cours '+c.id.slice(-4));
+const folderLabel=c=>winPath('Mes cours/'+(c.folder||wantRel(c)));
+const folderQ={};
+function courseFolder(c){const p=(folderQ[c.id]||Promise.resolve()).then(()=>courseFolder1(c));folderQ[c.id]=p.catch(()=>{});return p}
+async function courseFolder1(c){
+  const fs=D.desk.fs,root=dev.root;let want=wantRel(c);
+  if(c.folder&&c.folder!==want&&await fs.exists(root+'/'+c.folder)){
+    if(await fs.exists(root+'/'+want))want+=' ('+c.id.slice(-4)+')';
+    if(c.folder!==want){
+      await fs.mkdir(root+'/'+want.split('/')[0],{recursive:true});
+      await fs.rename(root+'/'+c.folder,root+'/'+want);
+      const oldSub=root+'/'+c.folder.split('/')[0];try{if(!(await fs.readdir(oldSub)).length)await fs.rmdir(oldSub)}catch(e){}
+      if(R.course===c&&R.folder)R.folder=root+'/'+want;
+    }
+  }
+  await fs.mkdir(root+'/'+want,{recursive:true});
+  if(c.folder!==want){c.folder=want;if(S.courses.includes(c))Store.put(c.id,c)}
+  return root+'/'+want;
+}
+const expT={};
+function queueExport(c){if(!D.full||!c||c.kind!=='course')return;clearTimeout(expT[c.id]);expT[c.id]=setTimeout(()=>exportCourse(c).catch(()=>{}),3000)}
+async function exportCourse(c){
+  if(!S.courses.includes(c))return;
+  if(!plainOf(c.html).trim()&&!c.notes&&!c.kit&&!c.folder)return;
+  const dir=await courseFolder(c),fs=D.desk.fs;
+  await fs.writeFile(dir+'/cours.md',courseMd(c),'utf8');
+  if(c.kit)await fs.writeFile(dir+'/fiches et quiz.md',kitMd(c),'utf8');
+  if(c.raw)await fs.writeFile(dir+'/texte d\'origine.txt',c.raw,'utf8');
+}
+async function trashFolder(c){
+  if(!D.full||!c.folder)return;
+  const fs=D.desk.fs,root=dev.root,src=root+'/'+c.folder;
+  try{if(!await fs.exists(src))return;await fs.mkdir(root+'/_Corbeille',{recursive:true});let dst=root+'/_Corbeille/'+c.folder.split('/').pop();if(await fs.exists(dst))dst+=' '+Date.now().toString(36);await fs.rename(src,dst);
+    const sub=root+'/'+c.folder.split('/')[0];try{if(!(await fs.readdir(sub)).length)await fs.rmdir(sub)}catch(e){}}catch(e){}
+}
+async function openFolder(c){
+  try{const p=c?await courseFolder(c):dev.root;if(!c)await D.desk.fs.mkdir(p,{recursive:true});if(c)await exportCourse(c);await D.desk.shell.openPath(winPath(p))}
+  catch(e){toast('Impossible d\'ouvrir le dossier : '+e.message,'err')}
+}
+
+/* ---------- Markdown (cours.md, fiches et quiz.md) ---------- */
+function htmlToMd(h){
+  const root=document.createElement('div');root.innerHTML=sanitize(h||'');
+  const inlM=n=>[...n.childNodes].map(x=>{
+    if(x.nodeType===3)return x.nodeValue.replace(/\u200b/g,'').replace(/\u00a0/g,' ');
+    if(x.nodeType!==1)return'';
+    if(x.classList.contains('eq'))return '$'+x.dataset.tex+'$';
+    const t=x.tagName;if(t==='BR')return'  \n';
+    const s=inlM(x);if(!s.trim())return s;
+    if(t==='B'||t==='STRONG')return'**'+s+'**';if(t==='I'||t==='EM')return'*'+s+'*';if(t==='S'||t==='STRIKE')return'~~'+s+'~~';if(t==='CODE')return'`'+s+'`';
+    if(t==='A'){const u=x.getAttribute('href')||'';return /^(https?:|mailto:)/i.test(u)?'['+s+']('+u+')':s}
+    if(/^(P|DIV|LI)$/.test(t))return s+' ';
+    return s;
+  }).join('');
+  const listM=(el,d)=>[...el.children].map(li=>{
+    if(li.tagName!=='LI')return(li.tagName==='UL'||li.tagName==='OL')?listM(li,d+1):'';
+    let txt='';const subs=[];
+    for(const c of li.childNodes){if(c.nodeName==='UL'||c.nodeName==='OL')subs.push(c);else txt+=inlM({childNodes:[c]})}
+    const mk=el.classList.contains('todo')?(li.dataset.done==='1'?'- [x] ':'- [ ] '):el.tagName==='OL'?'1. ':'- ';
+    return '  '.repeat(d)+mk+txt.trim()+(subs.length?'\n'+subs.map(s=>listM(s,d+1)).join('\n'):'');
+  }).filter(Boolean).join('\n');
+  const out=[];
+  const BLK=/^(P|DIV|UL|OL|TABLE|H[1-6]|BLOCKQUOTE|PRE|HR)$/;
+  const blkM=n=>{let buf='';const flush=()=>{if(buf.trim())out.push(buf.trim());buf=''};
+    for(const x of n.childNodes){
+      if(x.nodeType===3){buf+=x.nodeValue;continue}
+      if(x.nodeType!==1)continue;
+      const t=x.tagName,k=x.classList;
+      if(!BLK.test(t)&&!k.contains('eqblock')){buf+=inlM({childNodes:[x]});continue}
+      flush();
+      if(/^H[1-6]$/.test(t)){const s=inlM(x).trim();if(s)out.push('#'.repeat(Math.min(+t[1]+1,6))+' '+s);continue}
+      if(k.contains('eqblock')){out.push('$$\n'+x.dataset.tex+'\n$$');continue}
+      if(k.contains('callout')){const [i]=CALL[x.dataset.k]||CALL.rq;const at=out.length;blkM(x);const inner=out.splice(at).join('\n\n');out.push(('> '+i+' '+inner).split('\n').join('\n> '));continue}
+      if(k.contains('codeblock')){const pre=x.querySelector('pre'),sel=x.querySelector('select');out.push('```'+(sel&&sel.value!=='plain text'?sel.value:'')+'\n'+(pre?pre.innerText||pre.textContent:'').replace(/\u200b/g,'').replace(/\n+$/,'')+'\n```');continue}
+      if(k.contains('cols')){x.querySelectorAll(':scope>.col').forEach(col=>blkM(col));continue}
+      if(k.contains('toggle')){const tt=x.querySelector('.tgl-t'),bd=x.querySelector('.tgl-b');out.push('### '+(tt?inlM(tt).trim():'Section'));if(bd)blkM(bd);continue}
+      if(k.contains('toc'))continue;
+      if(t==='UL'||t==='OL'){const l=listM(x,0);if(l)out.push(l);continue}
+      if(t==='TABLE'){const rows=[...x.rows].map(r=>'| '+[...r.cells].map(c=>inlM(c).replace(/\|/g,'\\|').replace(/\s*\n\s*/g,' ').trim()).join(' | ')+' |');if(rows.length){rows.splice(1,0,'|'+' --- |'.repeat(x.rows[0].cells.length));out.push(rows.join('\n'))}continue}
+      if(t==='HR'){out.push('---');continue}
+      if(t==='BLOCKQUOTE'){const s=inlM(x).trim();if(s)out.push('> '+s.split('\n').join('\n> '));continue}
+      if(t==='PRE'){out.push('```\n'+x.textContent+'\n```');continue}
+      if([...x.children].some(c=>BLK.test(c.tagName)||c.classList.contains('eqblock'))){blkM(x);continue}
+      const s=inlM(x).trim();if(s)out.push(s);
+    }
+    flush();
+  };
+  blkM(root);
+  return out.join('\n\n');
+}
+function courseMd(c){return `# ${plain(c.title||'Cours sans titre')}\n*${c.subject||''} · ${c.createdAt||''}*\n\n`+htmlToMd(c.html)+'\n'}
+function kitMd(c){
+  const k=c.kit||{},out=[`# Révisions : ${plain(c.title||'')}`,''];
+  arr(k.fiches).forEach((f,i)=>{out.push(`## Fiche ${i+1} : ${plain(f.titre)}`,...arr(f.essentiel).map(x=>'- '+x));if(f.astuce)out.push('','*Astuce : '+plain(f.astuce)+'*');out.push('')});
+  if(arr(k.flashcards).length)out.push('## Flashcards',...k.flashcards.map(x=>`- **${plain(x.q)}** → ${x.r||''}`),'');
+  if(arr(k.quiz).length){out.push('## Quiz');k.quiz.forEach((q,i)=>{out.push(`${i+1}. ${q.question||''}`);arr(q.choix).forEach((ch,j)=>out.push(`   - ${'ABCD'[j]||j}. ${ch}${j===Number(q.bonne)?'  ✔':''}`));if(q.explication)out.push(`   *${plain(q.explication)}*`)});out.push('')}
+  if(arr(k.mnemos).length)out.push('## Moyens mnémotechniques',...k.mnemos.map(m=>`- ${m.pour||''} : ${m.astuce||''}`),'');
+  if(arr(k.feynman).length)out.push('## Défis Feynman',...k.feynman.map(f=>'- '+f),'');
+  const mm=k.carte_mentale||{};if(mm.centre)out.push(`## Carte mentale : ${plain(mm.centre)}`,...arr(mm.branches).map(b=>`- **${plain(b.titre)}** : ${arr(b.feuilles).join(', ')}`));
+  return out.join('\n')+'\n';
+}
+
+/* ---------- sauvegarde : exporter / importer (aussi depuis l'ancienne appli Cahier Malin) ---------- */
+async function exportBackup(){
+  const data=JSON.stringify({app:'cahier-malin-notion',version:1,exportedAt:new Date().toISOString(),profile:S.profile,courses:S.courses},null,1);
+  if(await saveFile('cahier-malin-sauvegarde-'+today()+'.json',data)&&!D.full)toast('Sauvegarde exportée ('+S.courses.length+' cours).','ok');
+}
+function fromOldCourse(o,transcript){
+  const t=targets.find(x=>x.name.toLowerCase()===String(o.subject||'').toLowerCase());
+  const html=o.notes&&typeof o.notes==='object'?notesToHtml(o.notes):(transcript?'<p>'+escH(transcript)+'</p>':'');
+  return{id:String(o.id),kind:'course',title:o.title||'',subject:o.subject||'Divers',subjectId:t?t.id:'new',createdAt:o.createdAt||today(),status:o.notes?'ready':'draft',
+    html,raw:transcript||'',notes:o.notes||undefined,kit:o.kit||undefined,examDate:o.examDate||null,done:o.done||{},cards:o.cards||{},quizBest:o.quizBest??null,minutes:o.minutes||0,updatedAt:Date.now()};
+}
+function mergeCourses(list,profile){
+  let n=0;
+  for(const c of list){
+    if(!c||!c.id)continue;
+    const i=S.courses.findIndex(x=>x.id===c.id);
+    if(i>=0){if((S.courses[i].updatedAt||0)>=(c.updatedAt||0))continue;S.courses[i]=c}else S.courses.push(c);
+    Store.put(c.id,c);queueExport(c);n++;
+  }
+  if(profile&&(profile.xp||0)>(S.profile.xp||0)){S.profile.xp=profile.xp;S.profile.streak=profile.streak||S.profile.streak;S.profile.lastDay=profile.lastDay||S.profile.lastDay;saveProfile();renderStats()}
+  return n;
+}
+function importJson(j){
+  if(j&&j.app==='cahier-malin-notion'){mergeTargets(arr(j.profile&&j.profile.targets));saveTargets();return mergeCourses(arr(j.courses).filter(c=>c&&c.kind==='course'),j.profile)}
+  if(j&&j.app==='cahier-malin'&&j.data){const d=j.data;return mergeCourses(Object.keys(d).filter(k=>/^c_/.test(k)&&d[k]&&d[k].id).map(k=>fromOldCourse(d[k],d['t_'+k]&&d['t_'+k].text)),d.profile)}
+  throw new Error('format');
+}
+$('#importFile').addEventListener('change',async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{const n=importJson(JSON.parse(await f.text()));toast(n+' cours importé'+(n>1?'s':'')+'.','ok');rerender()}
+  catch(err){toast('Ce fichier n\'est pas une sauvegarde Cahier Malin.','err')}
+});
+async function importOldApp(){
+  const fs=D.desk.fs,dir=D.data+'/donnees';
+  try{
+    if(!await fs.exists(dir)){toast('Aucune donnée de l\'ancienne appli Cahier Malin sur ce PC.','err');return}
+    const files=(await fs.readdir(dir)).filter(x=>x.isFile&&/\.json$/.test(x.name)),data={};
+    for(const f of files){try{data[f.name.replace(/\.json$/,'')]=JSON.parse(await fs.readFile(dir+'/'+f.name,'utf8'))}catch(e){}}
+    const n=importJson({app:'cahier-malin',data});toast(n?n+' cours repris de l\'ancienne appli.':'Rien de nouveau à reprendre.','ok');rerender();
+  }catch(e){toast('Lecture impossible : '+e.message,'err')}
+}
+
+/* ---------- rédaction automatique chaque soir (Cahier Malin) ---------- */
+let autoBusy=false,autoRetry=0;
+const pendingC=()=>S.courses.filter(c=>c.kind==='course'&&(c.status!=='ready'||!c.kit)&&(plainOf(c.html).trim().length>=40||c.notes)&&!(c===editing&&viewOf()==='ecrire')&&!(R.course===c&&(R.on||R.finishing)));
+function setAuto(t){const ch=$('#autoChip');ch.hidden=!t;ch.textContent=t?'⚙ '+t:''}
+function autoLine(){
+  const st=settings(),n=pendingC().length;
+  if(!st.auto)return'Rédaction automatique désactivée (Réglages).';
+  return n?`${n} cours en attente : ${n>1?'ils seront rédigés':'il sera rédigé'} avec ${n>1?'leurs':'ses'} fiches et quiz automatiquement à partir de ${st.hour}:00, si l'app est ouverte (même réduite).`
+    :`Tous tes cours ont leurs fiches et leurs quiz. Les prochains seront préparés automatiquement chaque soir à partir de ${st.hour}:00.`;
+}
+async function autoRun(force){
+  const st=settings();
+  if(autoBusy||aiBusy||!S.loaded||(!force&&!st.auto))return;
+  if(!(await aiAvailable())){if(force)toast(dev.ai==='ollama'?'L\'IA locale n\'est pas prête (Réglages > IA de rédaction).':'L\'IA n\'est disponible que lorsque l\'app est ouverte depuis claude.ai.','err');return}
+  const todo=pendingC();
+  if(!force){
+    const late=todo.some(c=>(c.createdAt||'')<today());
+    if((new Date().getHours()<st.hour&&!late)||(S.profile.lastAuto===today()&&!late)||Date.now()<autoRetry)return;
+    if(dev.ai!=='ollama'&&!S.profile.aiOk)return;
+  }
+  autoRetry=Date.now()+30*60000;
+  if(!todo.length){S.profile.lastAuto=today();saveProfile();if(force)toast('Rien à rédiger : tous tes cours sont prêts.','ok');return}
+  autoBusy=true;S.autoErr='';let ok=0,fail=0;
+  for(const c of todo){
+    if(R.on&&R.course===c)continue;
+    setAuto('Rédaction auto : '+(c.title||'cours sans titre')+'…');
+    if(c.status!=='ready'){if(await generateNotes(c,true))ok++;else{fail++;continue}}
+    if(!c.kit){setAuto('Révisions auto : '+(c.title||'cours')+'…');if(await generateKit(c,true))ok++;else fail++}
+  }
+  autoBusy=false;setAuto('');
+  if(!fail){S.profile.lastAuto=today();saveProfile()}
+  const msg=ok?`Rédaction automatique : ${todo.length} cours préparé${todo.length>1?'s':''} avec fiches et quiz.`:'';
+  if(fail)toast('Rédaction automatique : '+fail+' échec(s). '+(S.autoErr||'')+' Nouvel essai dans 30 min.','err');else if(msg)toast(msg,'ok');
+  if(msg)notify(msg);
+  rerender();
+}
+async function notify(body){try{if(D.full&&(await D.desk.permissions.state('notifications'))==='granted')await D.desk.notification.show({body:body.slice(0,300)})}catch(e){}}
+
+/* ---------- apparence : clair / sombre / automatique ---------- */
+let theme=ls.get('cmn-theme')||'auto';
+const THEME_LBL={auto:'Automatique',light:'Clair',dark:'Sombre'},THEME_ICO={auto:'🌗',light:'☀️',dark:'🌙'};
+/* le thème choisi est posé sur <body> : la page de claude.ai garde la main sur <html> sans l'écraser */
+function viewerDark(){const r=document.documentElement.dataset.theme;return r==='dark'||(r!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches)}
+function applyTheme(){
+  if(theme==='auto')delete document.body.dataset.th;else document.body.dataset.th=theme;
+  const b=$('#themeBtn');if(b){const dark=theme==='dark'||(theme==='auto'&&viewerDark());b.textContent=dark?'🌙':'☀️';b.title='Thème : '+THEME_LBL[theme]+' (cliquer pour passer en '+(dark?'clair':'sombre')+')'}
+}
+new MutationObserver(applyTheme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme);
+function setTheme(t){theme=t;ls.set('cmn-theme',t);applyTheme();if(viewOf()==='set')renderSettings()}
+$('#themeBtn').addEventListener('click',()=>{const dark=theme==='dark'||(theme==='auto'&&viewerDark());setTheme(dark?'light':'dark')});
+applyTheme();
+
+/* ---------- réglages ---------- */
+const dotOf=ok=>`<span class="dot ${ok===true?'ok':ok===false?'err':'wait'}"></span>`;
+function renderEng(){if(viewOf()==='set')renderSettings();setRecUi()}
+function renderSettings(){
+  const el=$('#v-set'),st=settings();
+  const hours=[15,16,17,18,19,20,21].map(h=>`<option value="${h}" ${st.hour===h?'selected':''}>${h}:00</option>`).join('');
+  let h=`<div class="wrap"><div class="head"><h1>Réglages</h1></div>`;
+  h+=`<div class="panel"><span class="label">Apparence</span><h3>Thème de l'app</h3><div class="themes" role="group" aria-label="Thème">${[['light','linear-gradient(135deg,#ffffff 50%,#f3edff 50%)'],['dark','linear-gradient(135deg,#1d192c 50%,#2e1c33 50%)'],['auto','linear-gradient(135deg,#ffffff 50%,#1d192c 50%)']].map(([k,bg])=>`<button type="button" data-set="theme" data-t="${k}" aria-pressed="${theme===k}"><i style="background:${bg}"></i>${THEME_ICO[k]} ${THEME_LBL[k]}</button>`).join('')}</div><p class="small muted" style="margin:10px 0 0">« Automatique » suit le réglage clair ou sombre de ton ordinateur. Le bouton ☀️ / 🌙 en haut à droite passe de l’un à l’autre en un clic.</p></div>`;
+  /* --- mon Notion --- */
+  const nr=notionRoot(),ns=D.nsearch;
+  h+=`<div class="panel" id="myNotion"><span class="label">Mon Notion</span><h3>Où envoyer mes cours</h3>
+  <p class="small muted" style="margin:0 0 8px">Chaque personne utilise <b>son</b> compte Notion (son connecteur dans claude.ai) et choisit ici ses pages. Ce choix est gardé dans son profil, jamais partagé.</p>
+  <div class="stat">${dotOf(!!nr)}Page racine : ${nr?'<b>'+escH(notionRootTitle()||'page choisie')+'</b>':'pas encore choisie'}</div>
+  <div class="stat">${dotOf(targets.length?true:null)}Matières : ${targets.length?targets.map(t=>`<span class="pill" style="margin:2px">${escH(t.name)} <button class="xbtn" data-set="nrm" data-id="${escH(t.id)}" aria-label="Retirer ${escH(t.name)}">×</button></span>`).join(''):'aucune pour l\'instant'}</div>
+  <form class="set-row" id="nSearchF"><input type="text" id="nQ" placeholder="Chercher une page dans mon Notion (ex. BTS, Maths…)" value="${escH(D.nq||'')}" autocomplete="off"><button class="btn main">Chercher</button></form>
+  ${ns===true?'<p class="small muted">Recherche…</p>':typeof ns==='string'?`<p class="small err">${escH(ns)}</p>`:Array.isArray(ns)?(ns.length?`<div class="nres">${ns.map((p,i)=>`<div class="nrow"><span><b>${escH(p.title||'Sans titre')}</b>${p.path?`<br><span class="small muted">${escH(p.path)}</span>`:''}</span><span class="row"><button class="btn" data-set="nroot" data-i="${i}">Page racine</button><button class="btn" data-set="nadd" data-i="${i}" ${targets.some(t=>t.id===p.id)?'disabled':''}>+ Matière</button></span></div>`).join('')}</div>`:'<p class="small muted">Aucune page trouvée.</p>'):''}
+  <p class="small muted">La page racine reçoit les nouvelles matières créées depuis l'app. Chaque matière est une page où les cours s'ajoutent.${isOwnerView()&&S.profile.notion?' <button class="btn ghost" data-set="ndefault">Revenir à mes pages par défaut</button>':''}</p></div>`;
+  /* --- app de bureau --- */
+  h+=`<div class="panel"><span class="label">Application Windows</span><h3>Enregistrer le cours au micro et ranger les fichiers sur le PC</h3>`;
+  if(!D.desk||!D.desk.fs){
+    h+=`<p class="small">L'enregistrement au micro avec Whisper (sans internet), l'audio en Opus, l'IA locale Ollama et le rangement dans <b>Mes cours\\Matière\\date - titre</b> marchent quand cette page est <b>installée comme application</b> depuis l'app Claude pour ordinateur.</p>`;
+    h+=D.install==='available'?`<div class="row"><button class="btn main" data-set="install">Installer comme application</button></div>`:D.install==='installed'?`<p class="small note">L'application est installée sur ce PC : ouvre « Cahier Malin × Notion » depuis le menu Démarrer pour enregistrer tes cours.</p>`:`<p class="small muted">Ouvre cette page dans l'app Claude pour Windows, puis choisis « Installer comme app ». Ici, tu peux déjà écrire, dicter, réviser et envoyer vers Notion.</p>`;
+  }else if(!D.full){
+    h+=`<p class="small">Pour lancer Whisper et écrire dans tes dossiers, l'application a besoin de l'accès à l'ordinateur. Windows te le demande une seule fois.</p><div class="row"><button class="btn main" data-set="grant">Autoriser l'accès à l'ordinateur</button>${D.perm==='denied'?'<button class="btn" data-set="manage">Ouvrir les permissions</button>':''}</div>${D.perm==='denied'?'<p class="small err">Accès refusé pour l\'instant : ouvre les permissions pour le rétablir.</p>':D.perm==='unavailable'?'<p class="small muted">Si le bouton ne donne rien, ferme et rouvre l\'application.</p>':''}`;
+  }else{
+    const m=D.st&&D.st.modules||{},okAll=m.numpy&&m.sounddevice&&m.faster_whisper;
+    h+=`<div class="stat">${dotOf(D.state==='ready'?true:D.state==='starting'?null:false)}Moteur local : ${D.state==='ready'?'prêt (Python '+escH(D.st.python)+')':D.state==='starting'?'démarrage…':'arrêté'}</div>`;
+    if(D.err)h+=`<p class="small err">${escH(D.err)}</p>`;
+    h+=`<div class="set-row"><label class="lab" for="sPy">Commande Python</label><input type="text" id="sPy" value="${escH(dev.py)}" spellcheck="false"><button class="btn" data-set="py">Relancer le moteur</button></div><p class="small muted" style="margin:0">Par défaut <code>py -3.13</code>. Tu peux mettre le chemin de l'environnement de Cahier Malin, ex. <code>"C:\\…\\cahier-malin\\.venv\\Scripts\\python.exe"</code>.</p>`;
+    if(D.state==='ready'){
+      h+=`<div style="margin-top:10px">${['numpy','sounddevice','faster_whisper','av'].map(k=>`<div class="stat">${dotOf(!!m[k])}${k==='faster_whisper'?'faster-whisper (transcription)':k==='av'?'av (audio en Opus)':k}</div>`).join('')}</div>`;
+      if(!okAll||!m.av)h+=`<div class="row" style="margin-top:8px"><button class="btn main" data-set="pip" ${D.pip?'disabled':''}>${D.pip?'Installation…':'Installer les modules manquants'}</button></div>`;
+      if(D.pipLog)h+=`<div class="log" id="pipLog">${escH(D.pipLog)}</div>`;
+    }
+    h+=`<div class="row" style="margin-top:10px"><button class="btn" data-set="importold">Reprendre les cours de l'ancienne appli Cahier Malin</button></div>`;
+  }
+  h+=`</div>`;
+  /* --- voix --- */
+  if(D.full&&D.state==='ready'){
+    const mics=D.mics&&D.mics.mics||[];
+    h+=`<div class="panel"><span class="label">Enregistrement du cours</span><h3>Micro et transcription Whisper</h3>
+    <div class="set-row"><label class="lab" for="sMic">Micro</label><select id="sMic"><option value="">Micro par défaut de Windows</option>${mics.map(x=>`<option value="${x.id}" ${String(dev.mic)===String(x.id)?'selected':''}>${escH(x.name)}${x.default?' (par défaut)':''}</option>`).join('')}</select><button class="btn" data-set="mics">Actualiser</button></div>
+    ${D.mics&&D.mics.error?`<p class="small err">${escH(D.mics.error)}</p>`:''}
+    <div class="set-row"><label class="lab" for="sModel">Modèle de voix</label><select id="sModel">${Object.entries(WMODELS).map(([k,v])=>`<option value="${k}" ${dev.model===k?'selected':''}>${k} · ${v}</option>`).join('')}</select><span class="small muted">${D.model?{loading:'chargement…',ready:'prêt ✓',error:'erreur',idle:''}[D.model.state]||'':''}</span></div>
+    <div class="set-row"><label class="lab" for="sLang">Langue</label><select id="sLang">${Object.entries(WLANGS).map(([k,v])=>`<option value="${k}" ${dev.lang===k?'selected':''}>${v}</option>`).join('')}</select></div>
+    <p class="small muted">La langue est détectée phrase par phrase en mode automatique (utile en cours d'anglais). Le modèle « small » (~460 Mo) se télécharge au premier enregistrement. Le PC ne se met pas en veille pendant l'enregistrement.</p>
+    ${D.st&&D.st.leftover?`<p class="note warn small">Un enregistrement précédent n'a pas été rangé (${D.st.leftover} prise(s) audio). <button class="btn" data-set="rescue">Le ranger dans Mes cours\\_Récupéré</button> <button class="btn ghost" data-set="discard">Le supprimer</button></p>`:''}</div>`;
+  }
+  /* --- IA --- */
+  const ol=D.ollama;
+  h+=`<div class="panel"><span class="label">IA de rédaction</span><h3>Qui remet le cours au propre ?</h3>
+  <label class="chk"><input type="radio" name="sAi" value="claude" ${dev.ai!=='ollama'?'checked':''}> Claude, avec ton compte (rapide, rien à installer)</label>
+  <label class="chk"><input type="radio" name="sAi" value="ollama" ${dev.ai==='ollama'?'checked':''} ${D.full?'':'disabled'}> IA locale gratuite sur ce PC (Ollama + gemma3:4b, sans internet, plus lente)</label>`;
+  if(D.full&&dev.ai==='ollama'){
+    if(!ol)h+=`<p class="small muted">Vérification d'Ollama…</p>`;
+    else if(!ol.installed)h+=`<p class="small err">Ollama n'est pas installé : télécharge-le sur ollama.com, puis clique sur « Vérifier ».</p>`;
+    else if(!ol.running)h+=`<p class="small err">Ollama est installé mais ne démarre pas.</p>`;
+    else if(!ol.has_model){const p=D.pull||ol.pull||{};h+=p.state==='pulling'?`<p class="small">Téléchargement du modèle : ${p.total?Math.round(p.done/p.total*100):0} %…</p>`:`<p class="small">Le modèle ${escH(ol.model)} (environ 3 Go) n'est pas encore téléchargé.</p><div class="row"><button class="btn main" data-set="pull">Télécharger le modèle</button></div>${p.state==='error'?`<p class="small err">${escH(p.error)}</p>`:''}`}
+    else h+=`<div class="stat">${dotOf(true)}Ollama prêt avec ${escH(ol.model)}</div>`;
+    h+=`<div class="row" style="margin-top:6px"><button class="btn" data-set="ollama">Vérifier</button></div>`;
+  }
+  h+=`</div>`;
+  /* --- automatique --- */
+  h+=`<div class="panel"><span class="label">Automatique</span><h3>Rédaction du soir</h3>
+  <label class="chk"><input type="checkbox" id="sAuto" ${st.auto?'checked':''}> Chaque soir, rédiger les cours en attente avec leurs fiches et leurs quiz</label>
+  <div class="set-row"><label class="lab" for="sHour">À partir de</label><select id="sHour">${hours}</select><button class="btn" data-set="autonow" ${autoBusy?'disabled':''}>Lancer maintenant</button></div>
+  <p class="small muted">${escH(autoLine())}${dev.ai!=='ollama'&&!S.profile.aiOk?' Lance une première rédaction à la main pour autoriser Claude : ensuite tout se fera seul.':''}</p></div>`;
+  /* --- dossiers --- */
+  if(D.full)h+=`<div class="panel"><span class="label">Rangement</span><h3>Dossier « Mes cours »</h3>
+  <div class="set-row"><input type="text" id="sRoot" value="${escH(winPath(dev.root))}" spellcheck="false" aria-label="Dossier Mes cours"><button class="btn" data-set="root">Enregistrer</button><button class="btn" data-set="openroot">📂 Ouvrir</button></div>
+  <p class="small muted">Chaque cours a son dossier <b>Matière\\date - titre</b> avec cours.md, fiches et quiz.md, transcription.txt, texte d'origine et l'enregistrement audio. Un cours supprimé va dans <b>_Corbeille</b>.</p></div>`;
+  /* --- sauvegarde --- */
+  h+=`<div class="panel"><span class="label">Sauvegarde</span><h3>Exporter ou importer tes cours</h3>
+  <p class="small muted">${Store.mode==='db'?'Tes cours sont déjà gardés avec ton compte Claude et suivent sur tous tes appareils.':'Tes cours sont gardés sur cet appareil seulement.'} Le fichier sert de copie de secours ; tu peux aussi importer une sauvegarde de l'ancienne appli Cahier Malin.</p>
+  <div class="row"><button class="btn" data-set="export">Exporter mes cours (${S.courses.length})</button><button class="btn" data-set="import">Importer un fichier</button></div></div>`;
+  el.innerHTML=h+'</div>';
+  const lg=$('#pipLog');if(lg)lg.scrollTop=lg.scrollHeight;
+}
+$('#v-set').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-set]');if(!b)return;const a=b.dataset.set;
+  if(a==='theme'){setTheme(b.dataset.t);return}
+  if(a==='nroot'||a==='nadd'){const p=(D.nsearch||[])[+b.dataset.i];if(!p)return;
+    if(a==='nroot'){const n=S.profile.notion||{subjects:targets.slice()};S.profile.notion={root:{id:p.id,title:p.title||'Page'},subjects:n.subjects||targets.slice()};saveProfile();toast('Page racine : '+(p.title||'page choisie'),'ok')}
+    else{mergeTargets([{id:p.id,name:p.title||'Matière'}]);saveTargets();toast('Matière ajoutée : '+(p.title||''),'ok')}
+    renderTargets(editing&&targets.some(t=>t.id===editing.subjectId)?editing.subjectId:firstTarget());renderSettings();return}
+  if(a==='nrm'){targets=targets.filter(t=>t.id!==b.dataset.id);saveTargets();renderTargets(firstTarget());renderSettings();return}
+  if(a==='ndefault'){delete S.profile.notion;saveProfile();loadProfileTargets();renderTargets(firstTarget());renderSettings();toast('Pages par défaut rétablies.','ok');return}
+  if(a==='install'){const r=await D.desk.install.request().catch(()=>'failed');if(r==='installed')toast('Installation lancée.','ok');else if(r!=='cancelled')toast('L\'installation n\'a pas pu se faire ici.','err');return}
+  if(a==='grant'){try{const r=await D.desk.permissions.request(['full-access','notifications']);D.perm=r['full-access'];if(D.perm==='granted')await enableFull();else renderSettings()}catch(err){toast('Demande impossible : '+err.message,'err')}return}
+  if(a==='manage'){D.desk.permissions.manage().then(async()=>{D.perm=await D.desk.permissions.state('full-access');if(D.perm==='granted')enableFull();else renderSettings()}).catch(()=>{});return}
+  if(a==='py'){dev.py=$('#sPy').value.trim()||'py -3.13';saveDev();stopEngine();await startEngine();return}
+  if(a==='pip')return pipInstall();
+  if(a==='mics'){send({cmd:'mics'});return}
+  if(a==='rescue'){send({cmd:'finalize',folder:dev.root+'/_Récupéré/'+today()});if(D.st)D.st.leftover=0;renderSettings();return}
+  if(a==='discard'){send({cmd:'discard'});return}
+  if(a==='pull'){send({cmd:'ai_pull'});D.pull={state:'pulling',done:0,total:0};renderSettings();return}
+  if(a==='ollama'){D.ollama=null;send({cmd:'ai_status'});renderSettings();return}
+  if(a==='autonow'){autoRun(true);return}
+  if(a==='root'){const v=$('#sRoot').value.trim().replace(/\\/g,'/').replace(/\/+$/,'');if(v){dev.root=v;saveDev();S.courses.forEach(c=>{delete c.folder;queueExport(c)});toast('Dossier enregistré. Les cours y sont rangés.','ok')}return}
+  if(a==='openroot'){openFolder(null);return}
+  if(a==='export'){exportBackup();return}
+  if(a==='import'){$('#importFile').click();return}
+  if(a==='importold'){importOldApp();return}
+});
+async function notionSearch(q){
+  const mcp=await mcpP;if(!mcp)throw{code:'not_granted'};
+  const r=await mcp.callTool('Notion','notion-search',{query:q,page_size:15,max_highlight_length:0});
+  let p=r&&r.payload;if(typeof p==='string'){try{p=JSON.parse(p)}catch(e){p=null}}
+  return arr(p&&p.results).filter(x=>x&&x.id&&(x.type==='page'||!x.type)).map(x=>({id:String(x.id),title:String(x.title||''),path:String(x.path||'')}));
+}
+document.addEventListener('submit',async e=>{
+  if(e.target.id!=='nSearchF')return;e.preventDefault();
+  const q=$('#nQ').value.trim();if(!q)return;D.nq=q;D.nsearch=true;renderSettings();
+  try{D.nsearch=await notionSearch(q)}catch(err){D.nsearch=err&&err.code==='not_granted'?'Notion n\'est pas disponible ici : ouvre l\'app depuis claude.ai, avec ton connecteur Notion activé.':notionErr(err)}
+  if(viewOf()==='set'){renderSettings();const el=$('#myNotion');if(el)el.scrollIntoView({block:'nearest'})}
+});
+$('#v-set').addEventListener('change',e=>{
+  const t=e.target;
+  if(t.id==='sMic'){dev.mic=t.value;saveDev()}
+  else if(t.id==='sModel'){dev.model=t.value;saveDev();send({cmd:'preload',model:dev.model,lang:dev.lang})}
+  else if(t.id==='sLang'){dev.lang=t.value;saveDev()}
+  else if(t.name==='sAi'){dev.ai=t.value;saveDev();if(dev.ai==='ollama')send({cmd:'ai_status'});renderSettings()}
+  else if(t.id==='sAuto'||t.id==='sHour'){S.profile.settings=Object.assign(settings(),{auto:$('#sAuto').checked,hour:+$('#sHour').value});saveProfile();renderSettings()}
+});
+function pipInstall(){
+  if(D.pip)return;D.pip=true;D.pipLog='Installation de faster-whisper, sounddevice, numpy et av… (quelques minutes)\n';renderSettings();
+  const p=D.desk.childProcess.spawn(dev.py+' -m pip install --upgrade faster-whisper sounddevice numpy av',[],{shell:true});
+  const add=ch=>{D.pipLog=(D.pipLog+ch).slice(-6000);const lg=$('#pipLog');if(lg){lg.textContent=D.pipLog;lg.scrollTop=lg.scrollHeight}};
+  p.stdout.on('data',add);p.stderr.on('data',add);
+  p.on('error',e=>{D.pip=false;add('\n'+e.message);renderSettings()});
+  p.on('exit',code=>{D.pip=false;add(code?'\nL\'installation a échoué (code '+code+').':'\nModules installés ✓');stopEngine();startEngine()});
+}
+
+/* ---------- démarrage du mode application ---------- */
+async function enableFull(){
+  if(D.full)return;
+  try{D.home=(await D.desk.os.homedir()).replace(/\\/g,'/')}catch(e){D.perm='unavailable';renderEng();return}
+  D.full=true;
+  D.data=D.plat==='win32'?D.home+'/AppData/Local/Cahier Malin':D.home+'/.cahier-malin';
+  if(!dev.root){dev.root=D.home+'/Documents/Cahier Malin/Mes cours';saveDev()}
+  if(!dict)$('#mic').hidden=true;setRecUi();
+  await startEngine();
+  if(S.loaded)S.courses.forEach(queueExport);
+  rerender();
+}
+async function initDesk(d){
+  D.desk=d;
+  try{D.plat=await d.os.platform()}catch(e){}
+  try{D.perm=await d.permissions.state('full-access')}catch(e){D.perm='unavailable'}
+  if(D.perm==='granted')await enableFull();else renderEng();
+}
+
+/* ---------- application de bureau : icône, installation, mode Windows ---------- */
+function drawIcon(){
+  const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');
+  x.fillStyle='#16181c';x.beginPath();x.roundRect(8,8,240,240,52);x.fill();
+  x.fillStyle='#fff';x.beginPath();x.roundRect(52,36,152,184,14);x.fill();
+  x.strokeStyle='#c4cbec';x.lineWidth=4;for(let y=78;y<=196;y+=24){x.beginPath();x.moveTo(64,y);x.lineTo(192,y);x.stroke()}
+  x.strokeStyle='#e4002b';x.lineWidth=5;x.beginPath();x.moveTo(84,44);x.lineTo(84,212);x.stroke();
+  x.fillStyle='#e4002b';x.beginPath();x.arc(186,190,30,0,7);x.fill();x.fillStyle='#fff';x.font='bold 34px sans-serif';x.textAlign='center';x.fillText('★',186,202);
+  return c.toDataURL('image/png');
+}
+(window.claude?claude.use('desktop'):Promise.resolve(null)).then(async d=>{
+  if(!d)return;
+  if(d.fs){D.desk=d;if(d.app&&d.app.dock)d.app.dock.setIcon(drawIcon()).catch(()=>{});await initDesk(d);return}
+  D.desk=d;
+  try{D.install=await d.install.state()}catch(e){}
+  if(D.install==='available'){
+    const b=document.createElement('button');b.className='btn';b.textContent='Installer comme app';$('.top').append(b);
+    b.addEventListener('click',async()=>{const r=await d.install.request().catch(()=>'failed');if(r==='installed'){b.remove();toast('Installation lancée. Ouvre ensuite l\'app pour enregistrer tes cours au micro.','ok')}else if(r!=='cancelled')toast('L\'installation n\'a pas pu se faire ici.','err')});
+  }
+  if(viewOf()==='set')renderSettings();
+}).catch(()=>{});
+
+/* ---------- démarrage ---------- */
+(async function boot(){
+  renderTargets(firstTarget());renderStats();
+  if(!location.hash)history.replaceState(null,'','#cours');
+  route();
+  await Store.init();
+  let all;
+  try{all=await Store.all()}
+  catch(e){Store.mode='local';all=Store.local();const n=$('#storeNote');n.hidden=false;n.textContent='Tes cours en ligne sont injoignables pour l\'instant : ce que tu fais maintenant est gardé sur cet appareil.'}
+  S.courses=all.filter(x=>x.kind==='course');
+  const p=all.find(x=>x.id==='profile');if(p)S.profile=Object.assign({kind:'profile'},p);
+  /* le Notion de ce profil : ses matières, ou celles par défaut pour le propriétaire */
+  loadProfileTargets();
+  if(isOwnerView()&&!S.profile.notion){const t=ls.get('cahier-targets');if(Array.isArray(t))mergeTargets(t)}
+  let added=false;added=mergeTargets(S.courses.filter(c=>c.subjectId&&c.subjectId!=='new').map(c=>({id:c.subjectId,name:c.subject})))||added;
+  if(added)saveTargets();
+  renderTargets(editing&&editing.subjectId&&targets.some(x=>x.id===editing.subjectId)?editing.subjectId:firstTarget());
+  S.loaded=true;
+  if(Store.mode==='local'&&$('#storeNote').hidden){const n=$('#storeNote');n.hidden=false;n.textContent='Sauvegarde sur cet appareil uniquement. Ouvre l\'app depuis claude.ai pour retrouver tes cours sur tous tes appareils.'}
+  if(editing&&!S.courses.includes(editing)&&!ed.textContent.trim())editing=null;
+  renderStats();if(viewOf()==='ecrire'&&!editing)newCourse();rerender();
+  if(window.katex)rerenderEq();else addEventListener('load',rerenderEq);
+  if(D.full)S.courses.forEach(queueExport);
+  setTimeout(()=>autoRun(),8000);
+  setInterval(()=>{autoRun();if(viewOf()==='plan')renderPlan()},60000);
+})();
+
+}
+</script>
+
+<script type="text/plain" id="engine-py">
+"""Moteur local de Cahier Malin x Notion (lancé par l'app de bureau).
+
+Micro + transcription Whisper (faster-whisper) sur ce PC, sans internet,
+compression de l'audio en Opus, et IA locale gratuite (Ollama).
+Dialogue avec la page : une commande JSON par ligne sur l'entrée standard,
+un événement JSON par ligne sur la sortie standard.
+"""
+import json
+import os
+import re
+import sys
+import threading
+import time
+import traceback
+from pathlib import Path
+
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stdin.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
+DATA = Path(__file__).resolve().parent.parent
+REC_DIR = DATA / "enregistrement en cours"
+LOG = DATA / "journal.txt"
+SR = 16000
+OUT = threading.Lock()
+os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
+os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
+
+HALLUCINATIONS = re.compile(
+    r"(sous-titr|amara\.org|merci d'avoir regard|abonnez-vous|n'oubliez pas de vous abonner|merci de votre attention\.?$)",
+    re.IGNORECASE,
+)
+
+
+def emit(**o):
+    with OUT:
+        try:
+            sys.stdout.write(json.dumps(o, ensure_ascii=False) + "\n")
+            sys.stdout.flush()
+        except Exception:
+            pass
+
+
+def log(msg):
+    try:
+        DATA.mkdir(parents=True, exist_ok=True)
+        with LOG.open("a", encoding="utf-8") as f:
+            f.write(time.strftime("%Y-%m-%d %H:%M:%S ") + msg + "\n")
+    except OSError:
+        pass
+
+
+def keep_awake(on):
+    """Empêche Windows de se mettre en veille pendant un enregistrement ou une rédaction."""
+    try:
+        import ctypes
+        ES_CONTINUOUS, ES_SYSTEM_REQUIRED = 0x80000000, 0x00000001
+        ctypes.windll.kernel32.SetThreadExecutionState(ES_CONTINUOUS | (ES_SYSTEM_REQUIRED if on else 0))
+    except Exception:
+        pass
+
+
+def has(mod):
+    import importlib.util
+    try:
+        return importlib.util.find_spec(mod) is not None
+    except Exception:
+        return False
+
+
+def modules():
+    return {m: has(m) for m in ("numpy", "sounddevice", "faster_whisper", "av")}
+
+
+def leftover():
+    return len(list(REC_DIR.glob("prise_*.wav"))) if REC_DIR.exists() else 0
+
+
+def list_mics():
+    mics = []
+    try:
+        import sounddevice as sd
+        default = sd.default.device[0]
+        seen = set()
+        for i, d in enumerate(sd.query_devices()):
+            api = sd.query_hostapis(d["hostapi"])["name"]
+            if d["max_input_channels"] > 0 and (api == "MME" or os.name != "nt") and d["name"] not in seen:
+                seen.add(d["name"])
+                mics.append({"id": i, "name": d["name"], "default": i == default})
+    except Exception as e:
+        log("Liste des micros impossible : " + traceback.format_exc())
+        return {"mics": [], "error": str(e)}
+    return {"mics": mics}
+
+
+class Transcriber:
+    """Micro -> morceaux de 20 à 40 s coupés dans les silences -> Whisper."""
+
+    def __init__(self):
+        self.model_name = "small"
+        self.lang = "auto"
+        self.model = None
+        self.model_state = "idle"
+        self.lock = threading.Lock()
+        self.buf, self.buf_len = [], 0
+        self.tail = ""
+        self.level = 0.0
+        self.state = "idle"
+        self.stream = None
+        self.wav = None
+        self.worker = None
+        self.wake = threading.Event()
+
+    def configure(self, model=None, lang=None):
+        if lang:
+            self.lang = lang
+        if model and model != self.model_name:
+            self.model_name = model
+            if self.model_state != "loading":
+                self.model, self.model_state = None, "idle"
+
+    def load(self):
+        if self.model is not None or self.model_state == "loading":
+            return
+        self.model_state = "loading"
+        emit(ev="model", state="loading", model=self.model_name)
+        threading.Thread(target=self._load, daemon=True).start()
+
+    def _load(self):
+        try:
+            from faster_whisper import WhisperModel
+            threads = max(2, min(8, (os.cpu_count() or 4) // 2))
+            self.model = WhisperModel(self.model_name, device="cpu", compute_type="int8", cpu_threads=threads)
+            self.model_state = "ready"
+            emit(ev="model", state="ready", model=self.model_name)
+        except Exception as e:
+            self.model_state = "error"
+            log("Chargement du modèle impossible : " + traceback.format_exc())
+            emit(ev="model", state="error", model=self.model_name,
+                 error="Le modèle de voix n'a pas pu se charger (il faut internet la première fois). " + str(e))
+
+    def _callback(self, indata, frames, time_info, status):
+        import numpy as np
+        block = indata[:, 0].copy()
+        with self.lock:
+            self.buf.append(block)
+            self.buf_len += len(block)
+            if self.wav is not None:
+                try:
+                    self.wav.writeframes((np.clip(block, -1, 1) * 32767).astype(np.int16).tobytes())
+                except Exception:
+                    pass
+        self.level = float(min(1.0, np.sqrt(np.mean(block ** 2)) * 12))
+        if self.buf_len >= SR * 20:
+            self.wake.set()
+
+    def start(self, mic=None):
+        if self.state != "idle":
+            emit(ev="started")
+            return
+        try:
+            import sounddevice as sd
+        except Exception as e:
+            emit(ev="rec_error", error="Le module sounddevice manque : installe les modules dans Réglages. " + str(e))
+            return
+        if self.model_state == "error":
+            self.model_state = "idle"
+        self.load()
+        try:
+            self.stream = sd.InputStream(samplerate=SR, channels=1, dtype="float32", blocksize=SR // 10,
+                                         device=mic if mic not in (None, "", -1) else None, callback=self._callback)
+            self.stream.start()
+        except Exception as e:
+            log("Micro indisponible : " + traceback.format_exc())
+            self.stream = None
+            emit(ev="rec_error", error="Micro introuvable ou bloqué. Vérifie qu'un micro est branché et que Windows autorise "
+                 "l'accès au micro (Paramètres > Confidentialité > Microphone). Détail : " + str(e))
+            return
+        try:
+            import wave
+            REC_DIR.mkdir(parents=True, exist_ok=True)
+            w = wave.open(str(REC_DIR / time.strftime("prise_%Y%m%d_%H%M%S.wav")), "wb")
+            w.setnchannels(1)
+            w.setsampwidth(2)
+            w.setframerate(SR)
+            with self.lock:
+                self.wav = w
+        except Exception:
+            log("Fichier audio impossible : " + traceback.format_exc())
+        self.state = "listening"
+        keep_awake(True)
+        if not self.worker or not self.worker.is_alive():
+            self.worker = threading.Thread(target=self._work, daemon=True)
+            self.worker.start()
+        threading.Thread(target=self._meter, daemon=True).start()
+        emit(ev="started")
+
+    def _meter(self):
+        while self.state == "listening":
+            with self.lock:
+                backlog = self.buf_len / SR
+            emit(ev="level", level=round(self.level, 3), backlog=round(backlog))
+            time.sleep(0.3)
+
+    def stop(self):
+        if self.state != "listening":
+            if self.state == "idle":
+                emit(ev="stopped")
+            return
+        self.state = "finishing"
+        try:
+            if self.stream:
+                self.stream.stop()
+                self.stream.close()
+        except Exception:
+            pass
+        self.stream = None
+        with self.lock:
+            w, self.wav = self.wav, None
+        try:
+            if w:
+                w.close()
+        except Exception:
+            pass
+        self.level = 0.0
+        keep_awake(False)
+        self.wake.set()
+
+    def _take_chunk(self, final):
+        import numpy as np
+        with self.lock:
+            if not self.buf:
+                return None
+            audio = np.concatenate(self.buf)
+            if not final and len(audio) < SR * 20:
+                return None
+            cut = len(audio)
+            if not final and len(audio) > SR * 20:
+                lo, hi = SR * 15, min(len(audio), SR * 40)
+                win = SR // 4
+                seg = audio[lo:hi]
+                n = len(seg) // win
+                if n > 1:
+                    energy = (seg[: n * win].reshape(n, win) ** 2).mean(axis=1)
+                    cut = lo + int(np.argmin(energy)) * win + win // 2
+            chunk, rest = audio[:cut], audio[cut:]
+            self.buf = [rest] if len(rest) else []
+            self.buf_len = len(rest)
+            return chunk
+
+    def _work(self):
+        while True:
+            self.wake.wait(timeout=1.0)
+            self.wake.clear()
+            final = self.state == "finishing"
+            if self.model is None:
+                if self.model_state == "error" and final:
+                    with self.lock:
+                        self.buf, self.buf_len = [], 0
+                    self.state = "idle"
+                    emit(ev="stopped")
+                    return
+                continue
+            chunk = self._take_chunk(final)
+            if chunk is not None and len(chunk) > SR // 2:
+                self._transcribe(chunk)
+                self.wake.set()
+                continue
+            if final:
+                self.state = "idle"
+                emit(ev="stopped")
+                return
+
+    def _transcribe(self, audio):
+        try:
+            segments, _ = self.model.transcribe(
+                audio, beam_size=1, vad_filter=True,
+                vad_parameters={"min_silence_duration_ms": 500},
+                condition_on_previous_text=False,
+                language=None if self.lang == "auto" else self.lang,
+                multilingual=self.lang == "auto",
+                initial_prompt=self.tail[-200:] or None,
+            )
+            parts = []
+            for s in segments:
+                t = s.text.strip()
+                if not t or s.no_speech_prob > 0.7 or HALLUCINATIONS.search(t):
+                    continue
+                parts.append(t)
+            text = " ".join(parts).strip()
+            if text:
+                emit(ev="text", text=text)
+                self.tail = (self.tail + " " + text)[-400:]
+        except Exception:
+            log("Transcription impossible : " + traceback.format_exc())
+            emit(ev="warn", error="Un morceau n'a pas pu être transcrit (voir journal.txt).")
+
+
+def _write_opus(audio_i16, path):
+    """Compresse l'audio en Opus (environ 11 Mo par heure)."""
+    import numpy as np
+    try:
+        import av
+        with av.open(str(path), "w", format="ogg") as out:
+            st = out.add_stream("libopus", rate=SR)
+            st.layout = "mono"
+            st.bit_rate = 24000
+            fs = st.codec_context.frame_size or 320
+            pts = 0
+            for i in range(0, len(audio_i16), fs):
+                blk = audio_i16[i:i + fs]
+                if len(blk) < fs:
+                    blk = np.pad(blk, (0, fs - len(blk)))
+                fr = av.AudioFrame.from_ndarray(blk.reshape(1, -1), format="s16", layout="mono")
+                fr.sample_rate = SR
+                fr.pts = pts
+                pts += fs
+                for pk in st.encode(fr):
+                    out.mux(pk)
+            for pk in st.encode(None):
+                out.mux(pk)
+        return True
+    except Exception:
+        log("Compression Opus impossible, WAV utilisé : " + traceback.format_exc())
+        try:
+            Path(path).unlink(missing_ok=True)
+        except OSError:
+            pass
+        return False
+
+
+def _free(folder, stem, ext):
+    p = folder / f"{stem}{ext}"
+    n = 2
+    while p.exists():
+        p = folder / f"{stem} {n}{ext}"
+        n += 1
+    return p
+
+
+def finalize(folder):
+    """Assemble les prises du micro en un seul fichier audio dans le dossier du cours."""
+    import wave
+    import numpy as np
+    parts = sorted(REC_DIR.glob("prise_*.wav")) if REC_DIR.exists() else []
+    if not parts:
+        emit(ev="audio", ok=False, error="Aucune prise audio à ranger.")
+        return
+    try:
+        dest = Path(folder)
+        dest.mkdir(parents=True, exist_ok=True)
+        chunks = []
+        for p in parts:
+            try:
+                with wave.open(str(p)) as w:
+                    chunks.append(np.frombuffer(w.readframes(w.getnframes()), dtype=np.int16))
+            except Exception:
+                log("Prise audio illisible : " + p.name)
+        audio = np.concatenate(chunks) if chunks else np.zeros(0, np.int16)
+        out = _free(dest, "enregistrement", ".ogg")
+        if not _write_opus(audio, out):
+            out = _free(dest, "enregistrement", ".wav")
+            with wave.open(str(out), "wb") as w:
+                w.setnchannels(1)
+                w.setsampwidth(2)
+                w.setframerate(SR)
+                w.writeframes(audio.tobytes())
+        for p in parts:
+            p.unlink(missing_ok=True)
+        emit(ev="audio", ok=True, path=str(out), minutes=round(len(audio) / SR / 60, 1))
+    except Exception as e:
+        log("Rangement de l'audio impossible : " + traceback.format_exc())
+        emit(ev="audio", ok=False, error=str(e))
+
+
+def discard():
+    for p in REC_DIR.glob("prise_*.wav") if REC_DIR.exists() else []:
+        try:
+            p.unlink()
+        except OSError:
+            pass
+    emit(ev="discarded")
+
+
+# ---------------- IA locale gratuite (Ollama) ----------------
+OLLAMA = "http://127.0.0.1:11434"
+AI_MODEL = "gemma3:4b"
+
+
+def _ollama_exe():
+    import shutil
+    exe = shutil.which("ollama")
+    if exe:
+        return exe
+    p = Path(os.environ.get("LOCALAPPDATA", "")) / "Programs" / "Ollama" / "ollama.exe"
+    return str(p) if p.exists() else None
+
+
+def _http(method, path, body=None, timeout=5):
+    import urllib.request
+    data = json.dumps(body).encode() if body is not None else None
+    req = urllib.request.Request(OLLAMA + path, data=data, method=method, headers={"Content-Type": "application/json"})
+    return urllib.request.urlopen(req, timeout=timeout)
+
+
+class LocalAI:
+    def __init__(self):
+        self.jobs = {}
+        self.pull = {"state": "idle", "done": 0, "total": 0, "error": ""}
+
+    def server_ok(self):
+        try:
+            with _http("GET", "/api/version", timeout=2) as r:
+                return r.status == 200
+        except Exception:
+            return False
+
+    def ensure_server(self):
+        if self.server_ok():
+            return True
+        exe = _ollama_exe()
+        if not exe:
+            return False
+        import subprocess
+        subprocess.Popen([exe, "serve"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        for _ in range(40):
+            time.sleep(0.5)
+            if self.server_ok():
+                return True
+        return False
+
+    def has_model(self):
+        try:
+            with _http("GET", "/api/tags") as r:
+                names = [m.get("name", "") for m in json.load(r).get("models", [])]
+            return any(n == AI_MODEL or n.startswith(AI_MODEL + "-") for n in names)
+        except Exception:
+            return False
+
+    def status(self):
+        installed = _ollama_exe() is not None
+        running = installed and self.ensure_server()
+        emit(ev="ai_status", installed=installed, running=running, model=AI_MODEL,
+             has_model=bool(running and self.has_model()), pull=dict(self.pull))
+
+    def start_pull(self):
+        if self.pull["state"] == "pulling":
+            return
+        self.pull = {"state": "pulling", "done": 0, "total": 0, "error": ""}
+        threading.Thread(target=self._pull, daemon=True).start()
+
+    def _pull(self):
+        last = 0
+        try:
+            if not self.ensure_server():
+                raise RuntimeError("Ollama n'est pas installé ou ne démarre pas.")
+            with _http("POST", "/api/pull", {"model": AI_MODEL, "stream": True}, timeout=3600) as r:
+                for line in r:
+                    if not line.strip():
+                        continue
+                    ev = json.loads(line)
+                    if ev.get("error"):
+                        raise RuntimeError(ev["error"])
+                    if ev.get("total"):
+                        self.pull["total"], self.pull["done"] = ev["total"], ev.get("completed", 0)
+                    if time.time() - last > 1:
+                        last = time.time()
+                        emit(ev="pull", **self.pull)
+            self.pull["state"] = "done"
+        except Exception as e:
+            log("Téléchargement du modèle impossible : " + traceback.format_exc())
+            self.pull.update(state="error", error=str(e))
+        emit(ev="pull", **self.pull)
+        self.status()
+
+    def start(self, job_id, prompt, as_json=True, max_tokens=4096):
+        job = {"cancel": False}
+        self.jobs[job_id] = job
+        threading.Thread(target=self._run, args=(job_id, job, prompt, as_json, max_tokens), daemon=True).start()
+
+    def _run(self, job_id, job, prompt, as_json, max_tokens):
+        if not self.ensure_server():
+            emit(ev="ai_done", id=job_id, error="L'IA locale (Ollama) n'est pas lancée. Vérifie qu'Ollama est installé.")
+            return
+        if not self.has_model():
+            emit(ev="ai_done", id=job_id, error="Le modèle d'IA n'est pas encore téléchargé : Réglages > IA de rédaction.")
+            return
+        need = len(prompt) // 3 + max_tokens + 512
+        num_ctx = min(32768, max(4096, (need // 4096 + 1) * 4096))
+        body = {"model": AI_MODEL, "messages": [{"role": "user", "content": prompt}], "stream": True, "keep_alive": "10m",
+                "options": {"num_ctx": num_ctx, "temperature": 0.3, "num_predict": max_tokens, "repeat_penalty": 1.15}}
+        if as_json:
+            body["format"] = "json"
+        keep_awake(True)
+        text, err, last = "", "", 0
+        try:
+            with _http("POST", "/api/chat", body, timeout=1800) as r:
+                for line in r:
+                    if job["cancel"]:
+                        break
+                    if not line.strip():
+                        continue
+                    ev = json.loads(line)
+                    if ev.get("error"):
+                        raise RuntimeError(ev["error"])
+                    text += (ev.get("message") or {}).get("content", "")
+                    if time.time() - last > 0.7:
+                        last = time.time()
+                        emit(ev="ai_delta", id=job_id, text=text)
+                    if ev.get("done"):
+                        if ev.get("done_reason") == "length":
+                            err = "La réponse a été coupée (cours très long)."
+                        break
+        except Exception as e:
+            if not job["cancel"]:
+                log("IA locale : " + traceback.format_exc())
+                err = "L'IA locale s'est arrêtée : " + str(e)
+        keep_awake(False)
+        self.jobs.pop(job_id, None)
+        if job["cancel"]:
+            emit(ev="ai_done", id=job_id, error="cancelled")
+        else:
+            emit(ev="ai_done", id=job_id, text=text, error=err)
+
+    def cancel(self, job_id):
+        job = self.jobs.get(job_id)
+        if job:
+            job["cancel"] = True
+
+
+def main():
+    tr, ai = Transcriber(), LocalAI()
+    emit(ev="hello", python=sys.version.split()[0], exe=sys.executable, modules=modules(), leftover=leftover())
+    for line in sys.stdin:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            m = json.loads(line)
+        except ValueError:
+            continue
+        c = m.get("cmd")
+        try:
+            if c == "status":
+                emit(ev="hello", python=sys.version.split()[0], exe=sys.executable, modules=modules(), leftover=leftover())
+            elif c == "mics":
+                emit(ev="mics", **list_mics())
+            elif c == "preload":
+                tr.configure(m.get("model"), m.get("lang"))
+                if has("faster_whisper"):
+                    tr.load()
+            elif c == "start":
+                tr.configure(m.get("model"), m.get("lang"))
+                tr.start(m.get("mic"))
+            elif c == "stop":
+                tr.stop()
+            elif c == "finalize":
+                threading.Thread(target=finalize, args=(m["folder"],), daemon=True).start()
+            elif c == "discard":
+                discard()
+            elif c == "ai_status":
+                threading.Thread(target=ai.status, daemon=True).start()
+            elif c == "ai_pull":
+                ai.start_pull()
+            elif c == "ai":
+                ai.start(m["id"], m["prompt"], m.get("json", True), int(m.get("max_tokens") or 4096))
+            elif c == "ai_cancel":
+                ai.cancel(m.get("id"))
+            elif c == "ping":
+                emit(ev="pong")
+        except Exception as e:
+            log("Commande " + str(c) + " : " + traceback.format_exc())
+            emit(ev="error", cmd=c, error=str(e))
+    tr.stop()
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception:
+        log("Erreur du moteur : " + traceback.format_exc())
+        raise
+</script>
+</body>
+</html>
