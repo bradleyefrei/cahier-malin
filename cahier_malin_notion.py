@@ -20,12 +20,15 @@ from pathlib import Path
 
 import webview
 
+import notion_api
+
 BASE = Path(__file__).resolve().parent
 PAGE_SRC = BASE / "fusion" / "index.html"
 PAGE_RUN = BASE / "fusion" / "_app.html"   # copie de la page avec le remplaçant de claude.ai
 DATA = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "Cahier Malin"
 DB_DIR = DATA / "fusion-db"
 LOG = DATA / "journal-fusion.txt"
+NOTION_CFG = DATA / "notion.json"   # clé d'intégration Notion, gardée sur ce PC seulement
 PORT = 47822
 PYTHON = BASE / ".venv" / "Scripts" / "python.exe"
 
@@ -198,6 +201,37 @@ class Api:
                 pr.p.wait(timeout=3)
             except Exception:
                 pr.p.kill()
+
+    # ----- Notion (API officielle, clé d'intégration gratuite) -----
+    @staticmethod
+    def _token():
+        try:
+            return json.loads(NOTION_CFG.read_text(encoding="utf-8")).get("token", "")
+        except (OSError, ValueError):
+            return ""
+
+    def notion_has_token(self):
+        return bool(self._token())
+
+    def notion_set_token(self, token):
+        token = (token or "").strip()
+        if not token:
+            NOTION_CFG.unlink(missing_ok=True)
+            return True
+        NOTION_CFG.write_text(json.dumps({"token": token}), encoding="utf-8")
+        return True
+
+    def notion_call(self, tool, args):
+        token = self._token()
+        if not token:
+            return {"error": {"code": "no_token", "message": "Clé Notion manquante."}}
+        try:
+            return {"payload": notion_api.call_tool(token, tool, args or {})}
+        except notion_api.NotionError as e:
+            return {"error": {"code": e.code, "message": e.message}}
+        except Exception as e:
+            log("Notion : " + traceback.format_exc())
+            return {"error": {"code": "tool_error", "message": str(e)}}
 
     # ----- enregistrer un fichier, notification -----
     def save_file(self, filename, content):

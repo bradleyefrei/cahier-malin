@@ -105,6 +105,30 @@
     },
   };
 
-  const caps = { db, user, desktop, downloads };
+  /* ---- Notion : API officielle avec une clé d'intégration (gratuite), à la place du connecteur claude.ai ---- */
+  const TOKEN_HELP = "Pour envoyer tes cours dans Notion, colle ta clé d'intégration Notion (elle commence par ntn_ ou secret_).\n\n"
+    + "1. Va sur notion.so/profile/integrations > Nouvelle intégration (type Interne), copie la clé.\n"
+    + "2. Dans Notion, ouvre la page « Cahier Malin — Mes cours » > ••• > Connexions > ajoute ton intégration.";
+  function askToken(msg) {
+    const t = window.prompt((msg ? msg + "\n\n" : "") + TOKEN_HELP, "");
+    if (!t || !t.trim()) return false;
+    return call("notion_set_token", t.trim()).then(() => true);
+  }
+  const mcp = {
+    async callTool(server, tool, input) {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const r = await call("notion_call", tool, input || {});
+        if (!r.error) return { payload: r.payload };
+        if ((r.error.code === "no_token" || r.error.code === "bad_token") && attempt === 0) {
+          if (await askToken(r.error.code === "bad_token" ? r.error.message : "")) continue;
+          throw { code: "tool_error", message: "Clé Notion manquante : ajoute-la pour envoyer tes cours." };
+        }
+        throw { code: r.error.code === "bad_token" ? "tool_error" : r.error.code, message: r.error.message };
+      }
+    },
+  };
+  window.cahierNotionKey = () => askToken("Changer la clé Notion.");
+
+  const caps = { db, user, desktop, downloads, mcp };
   window.claude = { use: async name => caps[name] || null };
 })();
