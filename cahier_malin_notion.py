@@ -46,10 +46,19 @@ def log(msg):
 def build_page():
     """Insère la configuration et claude-shim.js juste après <head>, avant tous les scripts de la page."""
     html = PAGE_SRC.read_text(encoding="utf-8")
-    cfg = {"py": f'"{PYTHON}"' if PYTHON.exists() else "py -3.13"}
+    cfg = {"py": f'"{PYTHON}"' if PYTHON.exists() else "py -3.13", "sendNow": "--envoyer-notion" in sys.argv}
     inject = ("<script>window.__CM=" + json.dumps(cfg).replace("<", "\\u003c") + "</script>"
               '<script src="claude-shim.js"></script>')
     html = re.sub(r"<head[^>]*>", lambda m: m.group(0) + inject, html, count=1, flags=re.I)
+    # envoi automatique vers Notion à 23:00 : placé DANS le bloc { … } du script principal,
+    # pour voir ses variables (S, targets, mcpP…) qui n'existent qu'à l'intérieur de ce bloc
+    auto = (BASE / "fusion" / "auto-notion.js").read_text(encoding="utf-8")
+    start = html.find("<script>\n{")
+    end = html.find("\n}\n</script>", start)
+    if start >= 0 and end > start:
+        html = html[:end] + "\n" + auto + html[end:]
+    else:
+        log("Envoi automatique vers Notion non installé : structure de la page inattendue")
     PAGE_RUN.write_text(html, encoding="utf-8")
 
 
