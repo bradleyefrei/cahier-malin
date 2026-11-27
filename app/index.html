@@ -203,6 +203,9 @@ details summary{cursor:pointer;font-weight:700;color:var(--blue)}
 .timeline .now{position:absolute;top:0;bottom:0;width:2px;background:var(--margin)}
 .tl-scale{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:.75rem;color:var(--muted)}
 
+body:not(.desk) .desk-only,body.desk .web-only{display:none!important}
+.meter{height:6px;width:160px;max-width:100%;border-radius:99px;background:var(--sunk);overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:var(--ok);border-radius:99px;transition:width .12s}
 .keyrow{display:flex;gap:8px;flex-wrap:wrap}
 .keyrow input{flex:1 1 260px;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;font-family:var(--f-mono)}
 
@@ -219,7 +222,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--blue)}
 <header class="top">
   <div class="wrap top-in">
     <div class="brand">Cahier<span>Malin</span></div>
-    <div class="stats" id="stats"></div>
+    <div class="row"><button class="chip" id="bg-chip" hidden title="Voir la rédaction en cours" style="cursor:pointer;background:var(--hl);color:var(--hl-ink);border-color:var(--hl)"></button><div class="stats" id="stats"></div></div>
   </div>
   <nav class="wrap navtabs" aria-label="Sections">
     <a href="#cours" data-v="cours">Mes cours</a>
@@ -256,6 +259,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--blue)}
           <div class="timer" id="timer">00:00</div>
           <div class="muted small" id="rec-state">Prêt</div>
           <div class="muted small mono" id="wordcount">0 mot</div>
+          <div class="meter desk-only" title="Niveau du micro"><i id="meter"></i></div>
         </div>
       </div>
       <div class="notice" id="rec-notice" hidden></div>
@@ -280,7 +284,14 @@ details summary{cursor:pointer;font-weight:700;color:var(--blue)}
   <section class="view" id="v-set" hidden>
     <div class="course-head"><span class="label">Réglages</span><h1>Réglages</h1></div>
 
-    <div class="panel">
+    <div class="panel desk-only">
+      <h2>IA de rédaction (gratuite)</h2>
+      <p class="muted">Une IA installée sur ton ordinateur rédige les cours, les fiches et les quiz. C'est gratuit, sans compte et sans internet une fois le modèle téléchargé.</p>
+      <p class="small" id="ai-status" aria-live="polite">Vérification…</p>
+      <div class="row"><button class="btn primary" id="ai-pull" hidden>Télécharger le modèle (≈ 3,3 Go)</button></div>
+    </div>
+
+    <div class="panel web-only">
       <h2>Clé API Claude</h2>
       <p class="muted">Elle permet à l'appli de rédiger les cours, les fiches et les quiz. Elle reste enregistrée sur cet appareil uniquement et n'est envoyée qu'à Anthropic.</p>
       <ol class="howto small">
@@ -294,7 +305,19 @@ details summary{cursor:pointer;font-weight:700;color:var(--blue)}
       <p class="small" id="k-status" aria-live="polite"></p>
     </div>
 
-    <div class="panel">
+    <div class="panel desk-only">
+      <h2>Micro et reconnaissance vocale</h2>
+      <p class="muted">La voix est transcrite sur ton ordinateur par Whisper, sans internet. Rien de ce qui est dit en cours ne quitte ton PC avant la rédaction.</p>
+      <div class="fields">
+        <div class="field"><label class="label" for="v-mic">Micro</label><select id="v-mic"></select></div>
+        <div class="field"><label class="label" for="v-model">Précision de la transcription</label><select id="v-model"></select></div>
+        <div class="field"><label class="label" for="v-lang">Langue du cours</label><select id="v-lang"></select></div>
+      </div>
+      <p class="small" id="v-status" aria-live="polite"></p>
+      <p class="small muted">« Recommandé » transcrit environ 2 à 3 fois plus vite que le temps réel sur ce PC. « Très précis » demande un téléchargement d'environ 1,5 Go et peut prendre du retard pendant un long cours.</p>
+    </div>
+
+    <div class="panel web-only">
       <h2>Installer l'appli</h2>
       <p class="muted" id="inst-text">Installe Cahier Malin pour l'ouvrir comme une vraie appli, avec son icône.</p>
       <ul class="howto small">
@@ -315,9 +338,13 @@ details summary{cursor:pointer;font-weight:700;color:var(--blue)}
     <div class="panel">
       <h2>Bon à savoir</h2>
       <ul class="howto small muted">
-        <li>Le micro marche dans Chrome, Edge (ordinateur et Android) et Safari (iPhone). Pas dans Firefox : sur Windows, utilise alors Windows + H dans la zone de texte.</li>
-        <li>La reconnaissance vocale passe par le service de ton navigateur (Google pour Chrome, Apple pour Safari) et demande internet.</li>
-        <li>Coût indicatif avec le modèle Claude Opus 5.5 : environ 0,10 à 0,30 $ par cours rédigé avec ses fiches et son quiz.</li>
+        <li class="web-only">Le micro marche dans Chrome, Edge (ordinateur et Android) et Safari (iPhone). Pas dans Firefox : sur Windows, utilise alors Windows + H dans la zone de texte.</li>
+        <li class="web-only">La reconnaissance vocale passe par le service de ton navigateur (Google pour Chrome, Apple pour Safari) et demande internet.</li>
+        <li class="desk-only">L'enregistrement marche sans internet. Internet est seulement nécessaire pour la rédaction du cours, des fiches et des quiz par Claude.</li>
+        <li class="desk-only">Pendant un enregistrement, l'ordinateur ne se met pas en veille. Laisse-le branché pour un long cours.</li>
+        <li class="desk-only">Tes cours sont enregistrés dans le dossier « Cahier Malin » de ton profil Windows (%LOCALAPPDATA%).</li>
+        <li class="web-only">Coût indicatif avec le modèle Claude Opus 5.5 : environ 0,10 à 0,30 $ par cours rédigé avec ses fiches et son quiz.</li>
+        <li class="desk-only">La rédaction par l'IA gratuite prend environ 15 minutes pour le cours, puis 10 à 15 minutes pour les fiches et le quiz. Lance-la en fin de journée, l'ordinateur branché.</li>
         <li>Demande l'accord du professeur avant d'enregistrer un cours.</li>
       </ul>
     </div>
@@ -330,7 +357,8 @@ details summary{cursor:pointer;font-weight:700;color:var(--blue)}
     <p class="muted" id="busy-step">Tri entre le cours et le bruit de la classe…</p>
     <div class="bar"></div>
     <p class="small mono muted" id="busy-count"></p>
-    <div class="row"><button class="btn" id="busy-stop">Arrêter</button></div>
+    <p class="small muted desk-only">L'IA tourne sur ton ordinateur : compte 15 à 30 minutes pour un cours d'une heure. Tu peux utiliser l'appli pendant ce temps, mais ne la ferme pas.</p>
+    <div class="row"><button class="btn primary" id="busy-hide" hidden>Continuer pendant ce temps</button><button class="btn" id="busy-stop">Arrêter</button></div>
   </div>
 </div>
 
@@ -357,7 +385,7 @@ const $ = (s, r = document) => r.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<mark>$1</mark>");
 const plain = s => String(s ?? "").replace(/\*\*/g, "");
-const arr = v => Array.isArray(v) ? v : [];
+const arr = v => Array.isArray(v) ? v.filter(x => x !== "" && x != null) : []; // ignore les éléments vides
 const pad = n => String(n).padStart(2, "0");
 const ymd = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
 const parseYmd = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
@@ -372,7 +400,11 @@ const niceDate = s => { const d = parseYmd(s); return DAYS[d.getDay()] + " " + d
 const longToday = () => { const d = new Date(); return DAYS[d.getDay()] + " " + d.getDate() + " " + MONTHS_L[d.getMonth()] + " " + d.getFullYear(); };
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const COLORS = ["#2D43D6","#E4484E","#18905A","#B86E00","#8A3FD1","#0E8BA8"];
-function download(filename, text, type) {
+async function download(filename, text, type) {
+  if (DESK) {
+    try { const p = await DESK.save_file(filename, text); if (p) toast("Fichier enregistré : " + p); } catch { toast("Enregistrement du fichier impossible."); }
+    return;
+  }
   const url = URL.createObjectURL(new Blob([text], { type }));
   const a = document.createElement("a"); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 5000);
@@ -381,9 +413,18 @@ let toastT;
 function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 4200); }
 
 /* ---------- stockage local (IndexedDB, sinon localStorage) ---------- */
+let DESK = null; // fonctions Python de l'appli Windows (window.pywebview.api)
 const Store = {
   db: null,
   async init() {
+    if (DESK) {
+      const self = this;
+      this.get = async k => { try { return await DESK.kv_get(k); } catch { return null; } };
+      this.set = async (k, v) => { try { await DESK.kv_set(k, JSON.parse(JSON.stringify(v))); } catch { toast("Enregistrement impossible sur le disque. Vérifie l'espace libre."); } };
+      this.del = async k => { try { await DESK.kv_del(k); } catch {} };
+      this.all = async () => { try { return (await DESK.kv_all()) || {}; } catch { return {}; } };
+      return;
+    }
     try {
       this.db = await new Promise((res, rej) => { const r = indexedDB.open("cahier-malin", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
       navigator.storage?.persist?.().catch(() => {});
@@ -435,7 +476,46 @@ function getClient() {
   if (!client) client = new Anthropic({ apiKey: S.apiKey, dangerouslyAllowBrowser: true, maxRetries: 2 });
   return client;
 }
-async function claude(prompt, { signal, onText, effort = "medium", maxTokens = 32000 } = {}) {
+/* IA gratuite sur le PC (Ollama, appli Windows) */
+// Les limites (maxItems, maxLength) empêchent la petite IA d'écrire sans fin sur un PC lent
+const STR = { type: "string" }, STRS = { type: "array", items: STR };
+const S_ = n => ({ type: "string", maxLength: n });
+const A_ = (items, max, min) => ({ type: "array", items, maxItems: max, ...(min ? { minItems: min } : {}) });
+const obj = (props, req) => ({ type: "object", properties: props, required: req || Object.keys(props) });
+const NOTES_SCHEMA = obj({
+  titre: S_(128), matiere: S_(64), resume: S_(800),
+  sections: A_(obj({ titre: S_(128), points: A_(S_(288), 6, 3), exemple: { type: ["string", "null"], maxLength: 320 } }), 6, 4),
+  definitions: A_(obj({ terme: S_(80), definition: S_(288) }), 8, 3),
+  a_retenir: A_(S_(256), 7, 5),
+  dates_formules: A_(obj({ label: S_(96), valeur: S_(192) }), 8),
+  consignes: A_(S_(256), 4),
+  date_controle_mentionnee: { type: ["string", "null"], maxLength: 10 },
+  bruit_ignore: S_(320),
+});
+const KIT_SCHEMA = obj({
+  fiches: A_(obj({ titre: S_(112), essentiel: A_(S_(224), 5, 3), astuce: S_(256) }), 4, 2),
+  flashcards: A_(obj({ q: S_(192), r: S_(224) }), 12, 10),
+  quiz: A_(obj({ question: S_(256), choix: A_(S_(144), 4, 4), bonne: { type: "integer", minimum: 0, maximum: 3 }, explication: S_(256) }), 8, 7),
+  mnemos: A_(obj({ pour: S_(128), astuce: S_(256) }), 3, 1),
+  feynman: A_(S_(256), 3, 2),
+  carte_mentale: obj({ centre: S_(80), branches: A_(obj({ titre: S_(80), feuilles: A_(S_(64), 4, 2) }), 5, 3) }),
+});
+async function localAI(prompt, { signal, onText, onPhase, schema = null, maxTokens = 4096 } = {}) {
+  const job = await DESK.ai_start(prompt, schema, maxTokens);
+  if (job.error) throw { code: "local", message: job.error };
+  return new Promise((resolve, reject) => {
+    const t = setInterval(async () => {
+      if (signal && signal.aborted) { clearInterval(t); DESK.ai_cancel(job.id); reject({ code: "cancelled" }); return; }
+      let p; try { p = await DESK.ai_poll(job.id); } catch { return; }
+      onPhase && onPhase(p.phase, p.elapsed);
+      if (p.text && onText) onText(p.text);
+      if (p.done) { clearInterval(t); p.error ? reject({ code: "local", message: p.error }) : resolve(p.text); }
+    }, 1000);
+  });
+}
+async function claude(prompt, opts = {}) {
+  if (DESK) return localAI(prompt, opts);
+  const { signal, onText, effort = "medium", maxTokens = 32000 } = opts;
   const stream = getClient().beta.messages.stream({
     model: MODEL,
     max_tokens: maxTokens,
@@ -459,6 +539,8 @@ function parseJson(text) {
   throw { code: "invalid_json" };
 }
 function errMsg(e) {
+  if (e && e.code === "local") return e.message;
+  if (e && e.code === "cancelled") return "Rédaction arrêtée. Tout est sauvegardé, tu peux relancer quand tu veux.";
   if (e instanceof Anthropic.APIUserAbortError) return "Génération arrêtée. Tout est sauvegardé, tu peux relancer quand tu veux.";
   if (e instanceof Anthropic.AuthenticationError) return "Clé API refusée. Vérifie-la dans Réglages.";
   if (e instanceof Anthropic.PermissionDeniedError) return "Cette clé API n'a pas accès au modèle. Vérifie ton compte sur console.anthropic.com.";
@@ -475,27 +557,37 @@ function errMsg(e) {
 }
 let busyCtl = null;
 $("#busy-stop").onclick = () => busyCtl && busyCtl.abort();
-async function askJson(prompt, title, steps) {
-  getClient();
+$("#busy-hide").onclick = () => { $("#busy").hidden = true; };
+$("#bg-chip").onclick = () => { $("#busy").hidden = false; };
+const mmss = s => (s >= 60 ? Math.floor(s / 60) + " min " : "") + (s % 60) + " s";
+function busyCount(msg) { $("#busy-count").textContent = msg; $("#bg-chip").textContent = "IA : " + msg; }
+async function askJson(prompt, title, steps, schema, maxTokens, auto) {
+  if (!DESK) getClient();
   busyCtl = new AbortController();
-  $("#busy").hidden = false; $("#busy-title").textContent = title; $("#busy-step").textContent = steps[0]; $("#busy-count").textContent = "Réflexion…";
-  let i = 0; const rot = setInterval(() => { i = Math.min(i + 1, steps.length - 1); $("#busy-step").textContent = steps[i]; }, 9000);
+  $("#busy").hidden = !!auto; $("#busy-title").textContent = title; $("#busy-step").textContent = steps[0]; busyCount("Réflexion…");
+  $("#busy-hide").hidden = !DESK; $("#bg-chip").hidden = !DESK;
+  let i = 0; const rot = setInterval(() => { i = Math.min(i + 1, steps.length - 1); $("#busy-step").textContent = steps[i]; }, DESK ? 60000 : 9000);
   try {
-    const text = await claude(prompt, { signal: busyCtl.signal, onText: t => { $("#busy-count").textContent = "Écriture… " + t.length.toLocaleString("fr-FR") + " caractères"; } });
+    const text = await claude(prompt, {
+      signal: busyCtl.signal, schema, maxTokens,
+      onPhase: (ph, s) => { if (ph === "reading") busyCount("lecture du cours… " + mmss(s)); },
+      onText: t => busyCount("écriture… " + t.length.toLocaleString("fr-FR") + " caractères"),
+    });
     return parseJson(text);
-  } finally { clearInterval(rot); $("#busy").hidden = true; }
+  } finally { clearInterval(rot); $("#busy").hidden = true; $("#bg-chip").hidden = true; }
 }
 
 function notesPrompt(c, transcript) {
   return `Tu es l'assistant de prise de notes d'un élève francophone. Nous sommes le ${longToday()} (${today()}).
-Voici la transcription AUTOMATIQUE et brute d'un cours enregistré en classe${c.subject ? " (matière indiquée : " + c.subject + ")" : ""}.
+Voici la transcription AUTOMATIQUE et brute d'un cours enregistré en classe${c.subject ? " (matière indiquée : " + c.subject + ")" : ""}, ou bien des notes déjà prises partie par partie sur ce cours.
 Elle contient du bruit : bavardages d'élèves, remarques hors sujet, rappels à l'ordre, questions de logistique, mots mal reconnus, répétitions.
 
 Ta mission :
 1. Distinguer ce que dit le professeur sur le contenu du cours de tout le reste. Écarte le bruit. Garde les informations utiles : devoirs, annonces, « ça tombera au contrôle », dates.
 2. Corriger les erreurs évidentes de reconnaissance vocale (noms propres, termes techniques) d'après le contexte.
-3. Restituer un cours STRUCTURÉ, CONCIS mais COMPLET : aucune notion enseignée ne doit manquer, aucune phrase inutile.
+3. Restituer un cours STRUCTURÉ, CONCIS mais COMPLET : aucune notion enseignée ne doit manquer, aucune phrase inutile. Lis bien la transcription jusqu'au bout. Pour un cours d'une heure, fais 3 à 6 parties de 3 à 6 points chacune ; chaque point est une phrase courte (moins de 25 mots).
 4. Mets en **gras** (double astérisque) les mots-clés les plus importants, avec parcimonie.
+5. La transcription peut mélanger plusieurs langues (par exemple un cours d'anglais ou d'espagnol). Rédige les explications en français, mais garde dans la langue étudiée le vocabulaire, les expressions, les règles et les exemples, avec leur traduction entre parenthèses.
 
 Réponds uniquement avec un objet JSON de cette forme :
 {"titre":"titre court du cours","matiere":"matière","resume":"3 à 4 phrases qui résument le cours","sections":[{"titre":"I. …","points":["phrase courte et claire"],"exemple":"exemple donné en cours ou null"}],"definitions":[{"terme":"…","definition":"…"}],"a_retenir":["5 à 8 idées essentielles"],"dates_formules":[{"label":"date, formule, chiffre ou auteur","valeur":"…"}],"consignes":["devoirs ou annonces du professeur"],"date_controle_mentionnee":"AAAA-MM-JJ si une date de contrôle est annoncée, sinon null","bruit_ignore":"une phrase qui dit ce qui a été écarté"}
@@ -504,6 +596,34 @@ Les tableaux vides sont permis. Pas de texte hors du JSON.
 TRANSCRIPTION :
 """
 ${transcript}
+"""`;
+}
+const PART_SCHEMA = obj({
+  points: STRS,
+  definitions: { type: "array", items: obj({ terme: STR, definition: STR }) },
+  dates_formules: { type: "array", items: obj({ label: STR, valeur: STR }) },
+  consignes: STRS,
+  date_controle: { type: ["string", "null"] },
+});
+function splitText(t, size) {
+  const out = []; let i = 0;
+  while (i < t.length) {
+    let end = Math.min(t.length, i + size);
+    if (end < t.length) { const dot = t.lastIndexOf(". ", end); if (dot > i + size * 0.6) end = dot + 1; }
+    out.push(t.slice(i, end).trim()); i = end;
+  }
+  return out.filter(Boolean);
+}
+function partPrompt(c, part, i, n) {
+  return `Voici la partie ${i + 1} sur ${n} de la transcription automatique d'un cours${c.subject ? " de " + c.subject : ""} enregistré en classe. Nous sommes le ${today()}.
+Elle contient du bruit (bavardages, remarques hors sujet, mots mal reconnus) : ignore-le.
+Relève TOUT ce que le professeur enseigne dans cette partie, sans rien oublier : chaque notion, explication, exemple, chiffre, nom, règle ou méthode, sous forme de points courts et précis en français (garde en langue étrangère le vocabulaire étudié, avec la traduction). Corrige les mots mal reconnus d'après le contexte.
+Ajoute les définitions, les dates ou formules, les consignes (devoirs, « ça tombera au contrôle ») et la date de contrôle si elle est annoncée (AAAA-MM-JJ, sinon null).
+Réponds uniquement en JSON : {"points":["…"],"definitions":[{"terme":"…","definition":"…"}],"dates_formules":[{"label":"…","valeur":"…"}],"consignes":["…"],"date_controle":null}
+
+TRANSCRIPTION (partie ${i + 1}/${n}) :
+"""
+${part}
 """`;
 }
 function kitPrompt(c) {
@@ -518,33 +638,90 @@ Réponds uniquement avec un objet JSON :
 "mnemos":[{"pour":"ce qu'il faut retenir","astuce":"phrase, acronyme ou image mentale"}],
 "feynman":["3 défis du type « Explique à un enfant de 10 ans pourquoi… »"],
 "carte_mentale":{"centre":"thème","branches":[{"titre":"…","feuilles":["2 à 4 mots-clés"]}]}}
-Quantités : 3 à 6 fiches, 12 à 24 flashcards, 10 à 15 questions de quiz (4 choix, "bonne" = index 0-3 de la bonne réponse, varie sa position, pièges plausibles), 2 à 5 mnémotechniques, 3 défis Feynman, 3 à 6 branches.
+${DESK ? `Quantités : 3 ou 4 fiches, 12 flashcards, 8 questions de quiz (4 choix courts, "bonne" = index 0-3 de la bonne réponse, varie sa position, pièges plausibles), 2 ou 3 mnémotechniques, 3 défis Feynman, 4 branches. Phrases courtes partout.`
+  : `Quantités : 3 à 6 fiches, 12 à 24 flashcards, 10 à 15 questions de quiz (4 choix, "bonne" = index 0-3 de la bonne réponse, varie sa position, pièges plausibles), 2 à 5 mnémotechniques, 3 défis Feynman, 3 à 6 branches.`}
 
 COURS :
 ${JSON.stringify(c.notes)}`;
 }
-async function generateNotes(c) {
+let aiRunning = false;
+async function generateNotes(c, auto) {
+  if (aiRunning) { toast("L'IA est déjà en train de rédiger. Réessaie quand elle a fini."); return false; }
   let t = (await Store.get("t_" + c.id))?.text || "";
-  if (!t.trim()) { toast("La transcription de ce cours est vide."); return; }
+  if (!t.trim()) { if (!auto) toast("La transcription de ce cours est vide."); return false; }
+  aiRunning = true;
   try {
-    const n = await askJson(notesPrompt(c, t), "Rédaction du cours", ["Tri entre le cours et le bruit de la classe…", "Correction des mots mal entendus…", "Structuration en parties…", "Définitions et points à retenir…", "Dernières finitions…"]);
+    // Lecture par morceaux : plus complet, mais trop lent sur un petit PC (désactivé, gardé pour un PC plus puissant)
+    if (DESK && S.chunked && t.length > 7000) {
+      const parts = splitText(t, 6000), notes = [];
+      for (let i = 0; i < parts.length; i++) {
+        const p = await askJson(partPrompt(c, parts[i], i, parts.length), `Lecture du cours : partie ${i + 1} sur ${parts.length}`,
+          ["Tri entre le cours et le bruit de la classe…", "Relevé de tout ce qui est enseigné…"], PART_SCHEMA, 2500, auto);
+        notes.push(`--- Partie ${i + 1} ---\n` + arr(p.points).map(x => "- " + x).join("\n")
+          + (arr(p.definitions).length ? "\nDéfinitions : " + p.definitions.map(d => d.terme + " = " + d.definition).join(" ; ") : "")
+          + (arr(p.dates_formules).length ? "\nDates/formules : " + p.dates_formules.map(d => d.label + " : " + d.valeur).join(" ; ") : "")
+          + (arr(p.consignes).length ? "\nConsignes : " + p.consignes.join(" ; ") : "")
+          + (p.date_controle ? "\nDate de contrôle annoncée : " + p.date_controle : ""));
+      }
+      t = "NOTES DÉTAILLÉES PRISES PARTIE PAR PARTIE (le bruit a déjà été retiré) :\n" + notes.join("\n\n");
+    }
+    const n = await askJson(notesPrompt(c, t), "Rédaction du cours", ["Tri entre le cours et le bruit de la classe…", "Correction des mots mal entendus…", "Structuration en parties…", "Définitions et points à retenir…", "Dernières finitions…"], NOTES_SCHEMA, DESK ? 3500 : 6000, auto);
     if (!n || typeof n !== "object" || !arr(n.sections).length) throw { code: "invalid_json" };
     c.notes = n; c.status = "ready";
     if (!c.title) c.title = plain(n.titre || "Cours du " + niceDate(c.createdAt));
     if (!c.subject) c.subject = plain(n.matiere || "Divers");
+    const g = n.date_controle_mentionnee;
+    if (auto && !c.examDate && g && /^\d{4}-\d{2}-\d{2}$/.test(g) && g > today()) c.examDate = g; // date annoncée en cours
     await saveCourse(c);
+    aiRunning = false;
+    if (auto) { render(); return true; }
     openCourse(c.id, "cours");
     askExam(c);
-  } catch (e) { toast(errMsg(e)); if (e && e.code === "no_key") location.hash = "reglages"; else render(); }
+    return true;
+  } catch (e) { aiRunning = false; if (!auto) { toast(errMsg(e)); if (e && e.code === "no_key") location.hash = "reglages"; else render(); } else log("auto: " + errMsg(e)); return false; }
 }
-async function generateKit(c) {
+async function generateKit(c, auto) {
+  if (aiRunning) { toast("L'IA est déjà en train de rédiger. Réessaie quand elle a fini."); return false; }
+  aiRunning = true;
   try {
-    const k = await askJson(kitPrompt(c), "Préparation des révisions", ["Création des fiches de synthèse…", "Fabrication des flashcards…", "Écriture du quiz et de ses pièges…", "Recherche de moyens mnémotechniques…", "Dessin de la carte mentale…"]);
+    const k = await askJson(kitPrompt(c), "Préparation des révisions", ["Création des fiches de synthèse…", "Fabrication des flashcards…", "Écriture du quiz et de ses pièges…", "Recherche de moyens mnémotechniques…", "Dessin de la carte mentale…"], KIT_SCHEMA, DESK ? 4000 : 7000, auto);
     if (!k || typeof k !== "object" || !arr(k.flashcards).length) throw { code: "invalid_json" };
     c.kit = k; c.cards = {}; await saveCourse(c);
+    aiRunning = false;
+    if (auto) { render(); return true; }
     toast(c.examDate ? "Fiches, quiz et planning prêts. Rendez-vous ce soir à 21:00." : "Fiches et quiz prêts.");
     openCourse(c.id, "fiches");
-  } catch (e) { toast(errMsg(e)); if (e && e.code === "no_key") location.hash = "reglages"; else render(); }
+    return true;
+  } catch (e) { aiRunning = false; if (!auto) { toast(errMsg(e)); if (e && e.code === "no_key") location.hash = "reglages"; else render(); } else log("auto: " + errMsg(e)); return false; }
+}
+function log(m) { try { console.warn(m); } catch {} }
+
+/* Chaque soir à partir de 18:00 : tous les cours et toutes les fiches en attente sont rédigés tout seuls */
+const AUTO_HOUR = 18;
+let autoBusy = false;
+const pending = () => S.courses.filter(c => c.status !== "ready" || !c.kit);
+function autoLine() {
+  const n = pending().length;
+  return n ? `${n} cours en attente : ${n > 1 ? "ils seront rédigés" : "il sera rédigé"} avec ${n > 1 ? "leurs" : "ses"} fiches et quiz automatiquement à partir de ${AUTO_HOUR}:00, si Cahier Malin est ouvert (même réduit).`
+    : `Tous tes cours ont leurs fiches et leurs quiz. Les prochains seront préparés automatiquement chaque soir à partir de ${AUTO_HOUR}:00.`;
+}
+async function autoRun() {
+  if (!DESK || autoBusy || aiRunning || R.want || S.aiReady === false) return;
+  // à partir de 18:00, ou à tout moment s'il reste des cours d'un jour précédent (ordi éteint ou fermé à 18:00)
+  const late = pending().some(c => c.createdAt < today());
+  if ((new Date().getHours() < AUTO_HOUR && !late) || (S.profile.lastAuto === today() && !late) || Date.now() < (S.autoRetryAt || 0)) return;
+  S.autoRetryAt = Date.now() + 30 * 60000; // en cas d'échec, nouvel essai dans 30 min
+  const todo = pending(); if (!todo.length) { S.profile.lastAuto = today(); Store.set("profile", S.profile); return; }
+  autoBusy = true; let ok = 0, fail = 0;
+  for (const c of todo) {
+    if (R.want) break; // un enregistrement a commencé : on reprendra plus tard
+    if (c.status !== "ready") { if (await generateNotes(c, true)) ok++; else { fail++; continue; } }
+    if (!c.kit && c.notes) { if (await generateKit(c, true)) ok++; else fail++; }
+  }
+  autoBusy = false;
+  if (!R.want && !fail) { S.profile.lastAuto = today(); Store.set("profile", S.profile); }
+  if (ok) toast(`Fiches du soir prêtes : ${ok} rédaction${ok > 1 ? "s" : ""} terminée${ok > 1 ? "s" : ""}.`);
+  render();
 }
 
 /* ---------- date du contrôle ---------- */
@@ -635,17 +812,61 @@ function stopRec() {
   clearInterval(R.tick); showTime(); wakeOff(); saveDraft(); setRecUi(false);
 }
 document.addEventListener("visibilitychange", () => {
-  if (!R.want) return;
+  if (!R.want || DESK) return;
   if (document.visibilityState === "visible") { try { R.rec.start(); } catch {} wakeOn(); recNotice(""); }
   else recNotice("L'écran a été quitté : l'enregistrement reprend dès que tu reviens sur l'appli. Garde l'appli ouverte pendant le cours.");
 });
-if (!SR) {
+
+/* Appli Windows : le micro et Whisper tournent côté Python */
+const DR = { timer: null, idle: [] };
+function deskPoll() {
+  if (DR.timer) return;
+  DR.timer = setInterval(async () => {
+    let p; try { p = await DESK.poll(); } catch { return; }
+    if (p.text) appendFinal(p.text);
+    $("#meter").style.width = Math.round(p.level * 100) + "%";
+    if (p.error) recNotice(p.error);
+    if (p.state === "listening") {
+      $("#rec-state").textContent = p.model_state === "loading" ? "J'écoute… (préparation de la transcription : quelques minutes la toute première fois)"
+        : p.backlog > 45 ? `J'écoute… (la transcription a ${p.backlog} s de retard, elle rattrape)` : "J'écoute le cours…";
+    } else if (p.state === "finishing") {
+      $("#rec-state").textContent = "Transcription des dernières phrases…" + (p.backlog ? ` (${p.backlog} s d'audio restantes)` : "");
+    } else {
+      clearInterval(DR.timer); DR.timer = null; $("#meter").style.width = "0";
+      if (!R.want) setRecUi(false);
+      DR.idle.splice(0).forEach(f => f());
+    }
+  }, 700);
+}
+async function deskStart() {
+  $("#mic").disabled = true;
+  let r; try { r = await DESK.start_recording(); } catch { r = { ok: false, error: "Le micro n'a pas pu démarrer." }; }
+  $("#mic").disabled = false;
+  if (!r.ok) { recNotice(r.error); return; }
+  R.want = true;
+  if (!R.since) { R.since = Date.now(); clearInterval(R.tick); R.tick = setInterval(showTime, 500); }
+  recNotice(""); setRecUi(true); deskPoll();
+}
+async function deskStop() {
+  R.want = false;
+  try { await DESK.stop_recording(); } catch {}
+  if (R.since) { R.elapsed += Date.now() - R.since; R.since = 0; }
+  clearInterval(R.tick); showTime(); saveDraft();
+  setRecUi(false, "Transcription des dernières phrases…"); deskPoll();
+}
+const deskIdle = () => new Promise(res => DR.timer ? DR.idle.push(res) : res());
+
+function initRecorder() {
+  if (DESK || SR) return;
   $("#mic").disabled = true; $("#rec-state").textContent = "Micro indisponible dans ce navigateur";
   recNotice(/Windows/.test(navigator.userAgent)
     ? "Ce navigateur n'a pas de reconnaissance vocale. Ouvre Cahier Malin dans Chrome ou Edge. En attendant : clique dans la grande zone de texte puis appuie sur Windows + H, la dictée de Windows écrit le cours."
     : "Ce navigateur n'a pas de reconnaissance vocale. Ouvre Cahier Malin dans Chrome (Android, ordinateur) ou Safari (iPhone). Tu peux aussi coller ou taper tes notes.", true);
 }
-$("#mic").addEventListener("click", () => { R.want ? stopRec() : startRec(); });
+$("#mic").addEventListener("click", () => {
+  if (DESK) { R.want ? deskStop() : deskStart(); return; }
+  R.want ? stopRec() : startRec();
+});
 txt.addEventListener("input", () => { words(); saveDraft(); });
 $("#r-subject").addEventListener("input", saveDraft);
 $("#r-title").addEventListener("input", saveDraft);
@@ -658,17 +879,26 @@ $("#r-clear").onclick = () => {
   if (!txt.value) return;
   if (!clearArmed) { clearArmed = true; $("#r-clear").textContent = "Confirmer l'effacement"; setTimeout(() => { clearArmed = false; $("#r-clear").textContent = "Effacer"; }, 4000); return; }
   clearArmed = false; $("#r-clear").textContent = "Effacer";
-  if (R.want) stopRec();
+  if (R.want) DESK ? deskStop() : stopRec();
+  if (DESK) DESK.discard_recording().catch(() => {});
   txt.value = ""; R.elapsed = 0; showTime(); words(); Store.del("draft"); setRecUi(false);
 };
 $("#r-finish").onclick = async () => {
-  if (R.want) stopRec();
-  await new Promise(r => setTimeout(r, 700)); // laisse arriver les derniers mots
+  if (DESK) {
+    $("#r-finish").disabled = true;
+    if (R.want) await deskStop();
+    await deskIdle(); // Whisper finit les dernières phrases
+    $("#r-finish").disabled = false;
+  } else {
+    if (R.want) stopRec();
+    await new Promise(r => setTimeout(r, 700)); // laisse arriver les derniers mots
+  }
   const text = txt.value.trim();
   if (text.length < 80) { toast("Il faut un peu plus de texte pour rédiger un cours."); return; }
   const c = { id: "c_" + Date.now().toString(36), subject: $("#r-subject").value.trim(), title: $("#r-title").value.trim(), createdAt: today(), minutes: Math.round(curElapsed() / 60000), status: "draft", notes: null, kit: null, examDate: null, done: {}, cards: {}, quizBest: null };
   await Store.set("t_" + c.id, { text });
   S.courses.unshift(c); await saveCourse(c);
+  if (DESK) DESK.finalize_recording(c.id).catch(() => {}); // range l'audio dans Mes cours\<Matière>
   txt.value = ""; $("#r-title").value = ""; R.elapsed = 0; showTime(); words(); Store.del("draft"); recNotice(""); setRecUi(false);
   openCourse(c.id, "cours");
   generateNotes(c);
@@ -768,8 +998,10 @@ function examPill(c) {
 
 function renderHome() {
   const plan = buildPlan(), t = today(), tonight = plan.find(p => p.date === t);
-  let h = `<div class="row between"><div><span class="label">${esc(longToday())}</span><h1>Mes cours</h1></div><a class="btn primary" href="#enregistrer">Enregistrer un cours</a></div>`;
-  if (!S.apiKey) h += `<div class="notice info">Pour que les cours, fiches et quiz se rédigent tout seuls, ajoute ta clé API Claude dans <a href="#reglages">Réglages</a>. L'enregistrement marche déjà sans.</div>`;
+  let h = `<div class="row between"><div><span class="label">${esc(longToday())}</span><h1>Mes cours</h1></div><div class="row">${DESK ? `<button class="btn" data-folder="">Dossier Mes cours</button>` : ""}<a class="btn primary" href="#enregistrer">Enregistrer un cours</a></div></div>`;
+  if (DESK) h += `<p class="small muted">${autoLine()}</p>`;
+  if (DESK) { if (S.aiReady === false) h += `<div class="notice info">L'IA gratuite n'est pas encore prête : va dans <a href="#reglages">Réglages</a> pour télécharger son modèle. L'enregistrement marche déjà sans.</div>`; }
+  else if (!S.apiKey) h += `<div class="notice info">Pour que les cours, fiches et quiz se rédigent tout seuls, ajoute ta clé API Claude dans <a href="#reglages">Réglages</a>. L'enregistrement marche déjà sans.</div>`;
   h += clockNote();
   if (tonight) {
     h += `<div class="tonight"><span class="label">Ce soir · 21:00 – 23:00</span><h2>${tonight.slots.length} séance${tonight.slots.length > 1 ? "s" : ""} de 25 min</h2><ol>` +
@@ -826,7 +1058,42 @@ function renderSettings() {
   $("#k-input").value = S.apiKey;
   $("#k-status").textContent = S.apiKey ? "Une clé est enregistrée sur cet appareil." : "Aucune clé enregistrée.";
   if (matchMedia("(display-mode: standalone)").matches) $("#inst-text").textContent = "Cahier Malin est déjà installé sur cet appareil.";
+  if (DESK) { renderVoice(); renderAI(); }
 }
+let aiTimer = null;
+async function refreshAI() {
+  try { const st = await DESK.ai_status(); S.aiReady = st.has_model; return st; } catch { S.aiReady = false; return null; }
+}
+async function renderAI() {
+  clearTimeout(aiTimer);
+  const st = await refreshAI(), el = $("#ai-status"), btn = $("#ai-pull");
+  btn.hidden = true;
+  if (!st) { el.textContent = "État de l'IA indisponible."; return; }
+  const p = st.pull;
+  if (!st.installed) el.textContent = "Le logiciel Ollama n'est pas installé sur cet ordinateur. Installe-le depuis ollama.com, puis relance Cahier Malin.";
+  else if (!st.running) el.textContent = "Ollama est installé mais ne démarre pas. Redémarre l'ordinateur puis relance Cahier Malin.";
+  else if (st.has_model) el.textContent = "IA prête (modèle " + st.model + "). La rédaction est automatique et gratuite.";
+  else if (p.state === "pulling") el.textContent = "Téléchargement du modèle… " + (p.total ? Math.round(p.done / p.total * 100) + " % (" + (p.done / 1e9).toFixed(1) + " / " + (p.total / 1e9).toFixed(1) + " Go)" : "démarrage");
+  else { el.textContent = p.state === "error" ? "Le téléchargement a échoué : " + p.error + ". Vérifie ta connexion puis réessaie." : "Il reste à télécharger le modèle d'IA (une seule fois, environ 3,3 Go)."; btn.hidden = false; }
+  if (p.state === "pulling" && !$("#v-set").hidden) aiTimer = setTimeout(renderAI, 2000);
+}
+$("#ai-pull").onclick = async () => { await DESK.ai_pull(); setTimeout(renderAI, 500); };
+const MODEL_STATE = { idle: "", loading: "Préparation du modèle de voix… (téléchargement la première fois, il faut internet)", ready: "Modèle de voix prêt.", error: "Le modèle de voix n'a pas pu être préparé. Vérifie ta connexion internet puis relance l'appli." };
+let voiceTimer = null;
+async function renderVoice() {
+  try {
+    const [st, mics] = await Promise.all([DESK.voice_status(), DESK.list_mics()]);
+    $("#v-mic").innerHTML = `<option value="">Micro par défaut de Windows</option>` + mics.map(m => `<option value="${m.id}" ${st.mic === m.id ? "selected" : ""}>${esc(m.name)}${m.default ? " (par défaut)" : ""}</option>`).join("");
+    $("#v-model").innerHTML = Object.entries(st.models).map(([k, l]) => `<option value="${k}" ${st.model === k ? "selected" : ""}>${l}</option>`).join("");
+    $("#v-lang").innerHTML = Object.entries(st.langs || {}).map(([k, l]) => `<option value="${k}" ${st.lang === k ? "selected" : ""}>${l}</option>`).join("");
+    $("#v-status").textContent = MODEL_STATE[st.model_state] || "";
+    clearTimeout(voiceTimer);
+    if (st.model_state === "loading" && !$("#v-set").hidden) voiceTimer = setTimeout(renderVoice, 3000);
+  } catch { $("#v-status").textContent = "Réglages du micro indisponibles."; }
+}
+$("#v-mic").addEventListener("change", async e => { await DESK.set_voice(null, e.target.value === "" ? -1 : Number(e.target.value)); toast("Micro choisi."); });
+$("#v-model").addEventListener("change", async e => { await DESK.set_voice(e.target.value, null); renderVoice(); });
+$("#v-lang").addEventListener("change", async e => { await DESK.set_voice(null, null, e.target.value); toast(e.target.value === "auto" ? "La langue sera reconnue automatiquement, phrase par phrase." : "Langue du cours enregistrée."); });
 $("#k-show").onclick = () => { const i = $("#k-input"); i.type = i.type === "password" ? "text" : "password"; $("#k-show").textContent = i.type === "password" ? "Afficher" : "Masquer"; };
 $("#k-save").onclick = async () => {
   const k = $("#k-input").value.trim();
@@ -869,7 +1136,7 @@ function renderCourse() {
   <div class="course-head"><span class="label">${esc(c.subject || "Matière à préciser")} · ${niceDate(c.createdAt)}</span><h1>${esc(c.title || "Cours en cours de rédaction")}</h1>
   <div class="row">${examPill(c)}${c.notes ? `<button class="btn ghost" data-exam="${c.id}">${c.examDate ? "Changer la date du contrôle" : "Ajouter la date du contrôle"}</button>` : ""}</div></div>`;
   if (c.status !== "ready") {
-    h += `<div class="empty"><h2>Ce cours n'est pas encore rédigé</h2><p class="muted">La transcription est bien sauvegardée. Lance la rédaction quand tu veux${S.apiKey ? "" : " (ajoute d'abord ta clé API dans Réglages)"}.</p><button class="btn primary" data-gen-notes>Rédiger le cours</button></div>` + transcriptBlock() + deleteBlock();
+    h += `<div class="empty"><h2>Ce cours n'est pas encore rédigé</h2><p class="muted">La transcription est bien sauvegardée. Lance la rédaction quand tu veux${S.apiKey || DESK ? "" : " (ajoute d'abord ta clé API dans Réglages)"}.</p><button class="btn primary" data-gen-notes>Rédiger le cours</button></div>` + transcriptBlock() + deleteBlock();
     el.innerHTML = h; return;
   }
   h += `<div class="subtabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" aria-selected="${S.tab === k}" class="${S.tab === k ? "on" : ""}" data-tab="${k}">${l}</button>`).join("")}</div>`;
@@ -882,7 +1149,7 @@ function renderCourse() {
   el.innerHTML = h;
 }
 const transcriptBlock = () => `<details class="panel" id="raw-det"><summary>Transcription brute</summary><div class="raw" id="raw">Chargement…</div></details>`;
-const deleteBlock = () => `<div class="row"><button class="btn danger" data-del>Supprimer ce cours</button></div>`;
+const deleteBlock = () => `<div class="row">${DESK ? `<button class="btn" data-folder="${S.current}">Ouvrir le dossier du cours</button>` : ""}<button class="btn danger" data-del>Supprimer ce cours</button></div>`;
 const canSpeak = "speechSynthesis" in window;
 function notesView(c) {
   const n = c.notes;
@@ -943,7 +1210,7 @@ function quizView(c) {
     <div class="row between"><span class="small muted mono">Question ${QZ.i + 1}/${QZ.order.length} · score ${QZ.score}</span>${QZ.combo >= 2 ? `<span class="combo">Série de ${QZ.combo} !</span>` : ""}</div>
     <div class="fc-progress"><i style="width:${(QZ.i / QZ.order.length * 100).toFixed(1)}%"></i></div>
     <h2>${fmt(q.question)}</h2>
-    <div class="choices">${arr(q.choix).map((ch, i) => { let cls = ""; if (QZ.pick != null) { if (i === good) cls = "good"; else if (i === QZ.pick) cls = "bad"; } return `<button class="choice ${cls}" data-pick="${i}" ${QZ.pick != null ? 'aria-disabled="true"' : ""}><b>${"ABCD"[i]}</b><span>${fmt(ch)}</span></button>`; }).join("")}</div>
+    <div class="choices">${(Array.isArray(q.choix) ? q.choix : []).map((ch, i) => { let cls = ""; if (QZ.pick != null) { if (i === good) cls = "good"; else if (i === QZ.pick) cls = "bad"; } return `<button class="choice ${cls}" data-pick="${i}" ${QZ.pick != null ? 'aria-disabled="true"' : ""}><b>${"ABCD"[i]}</b><span>${fmt(ch)}</span></button>`; }).join("")}</div>
     ${QZ.pick != null ? `<div class="panel"><p><strong>${QZ.pick === good ? "Bonne réponse." : "Pas tout à fait."}</strong> ${fmt(q.explication)}</p></div><div class="row"><button class="btn primary" data-quiz-next>Question suivante</button></div>` : ""}
   </div>`;
 }
@@ -999,6 +1266,7 @@ document.addEventListener("click", e => {
     t.dataset.armed = "1"; t.textContent = "Confirmer : supprimer définitivement"; setTimeout(() => { if (t.isConnected) { delete t.dataset.armed; t.textContent = "Supprimer ce cours"; } }, 4000); return;
   }
   if (t.id === "ics") exportIcs();
+  if (t.dataset.folder !== undefined && DESK) DESK.open_folder(t.dataset.folder || null);
 });
 document.addEventListener("change", e => {
   const t = e.target; if (!t.matches(".slot input[type=checkbox]")) return;
@@ -1015,7 +1283,7 @@ document.addEventListener("submit", async e => {
   if (e.target.id !== "ask-form") return; e.preventDefault();
   const q = $("#ask-q").value.trim(), c = cur(); if (!q || !c) return;
   const out = $("#ask-a"); out.textContent = "Réflexion…";
-  try { await claude(`Tu es un professeur bienveillant. Réponds en français, simplement et en moins de 150 mots, à la question d'un élève sur ce cours. Donne un exemple concret si utile. Pas de markdown.\n\nCOURS (JSON) :\n${JSON.stringify(c.notes)}\n\nQUESTION : ${q}`, { effort: "low", maxTokens: 4000, onText: t => { out.textContent = t; } }); }
+  try { await claude(`Tu es un professeur bienveillant. Réponds en français, simplement et en moins de 150 mots, à la question d'un élève sur ce cours. Donne un exemple concret si utile. Pas de markdown.\n\nCOURS (JSON) :\n${JSON.stringify(c.notes)}\n\nQUESTION : ${q}`, { effort: "low", maxTokens: DESK ? 600 : 4000, onText: t => { out.textContent = t; }, onPhase: (ph, s) => { if (ph === "reading") out.textContent = "L'IA lit le cours… " + mmss(s); } }); }
   catch (err) { out.textContent = errMsg(err); }
 });
 document.addEventListener("keydown", e => {
@@ -1050,14 +1318,25 @@ async function loadCourses() {
   return all;
 }
 (async function boot() {
+  if (location.port === "47821" || window.pywebview) {
+    DESK = await new Promise(res => {
+      if (window.pywebview && window.pywebview.api && window.pywebview.api.kv_get) return res(window.pywebview.api);
+      const t = setTimeout(() => res(null), 8000);
+      window.addEventListener("pywebviewready", () => { clearTimeout(t); res(window.pywebview.api); }, { once: true });
+    });
+  }
+  document.body.classList.toggle("desk", !!DESK);
+  initRecorder();
   await Store.init();
+  if (DESK) refreshAI().then(() => { if (!$("#v-cours").hidden) renderHome(); });
   const all = await loadCourses();
   S.apiKey = (all.settings && all.settings.apiKey) || "";
   const draft = all.draft;
   if (draft) { $("#r-subject").value = draft.subject || ""; $("#r-title").value = draft.title || ""; txt.value = draft.text || ""; R.elapsed = draft.elapsed || 0; showTime(); words(); if (txt.value) recNotice("Ton enregistrement précédent a été récupéré. Continue ou termine-le.", true); }
   render(); route();
-  setInterval(() => { if (!$("#v-plan").hidden) renderPlan(); }, 60000);
-  if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("sw.js").catch(() => {});
+  setInterval(() => { if (!$("#v-plan").hidden) renderPlan(); autoRun(); }, 60000);
+  setTimeout(autoRun, 15000);
+  if (!DESK && "serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("sw.js").catch(() => {});
 })();
 </script>
 </body>

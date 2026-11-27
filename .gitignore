@@ -1,0 +1,16 @@
+# Environnements et dépendances (se réinstallent)
+.venv/
+node_modules/
+__pycache__/
+*.pyc
+
+# Données personnelles : cours, enregistrements, transcriptions (jamais publiées)
+Mes cours/
+*.wav
+*.ogg
+
+# Réglages locaux de l'outil de développement
+.claude/
+
+# Ancienne version claude.ai (remplacée par l'appli Windows)
+cahier-malin.html
