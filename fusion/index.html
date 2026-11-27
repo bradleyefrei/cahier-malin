@@ -393,6 +393,15 @@ h2[style*=Archivo]{font-family:'Plus Jakarta Sans',Inter,sans-serif!important;le
 .nrow .btn{min-height:36px;padding:0 10px;font-size:14px}
 .xbtn{border:0;background:none;color:var(--muted);cursor:pointer;font-size:14px;padding:0 2px;line-height:1}
 .xbtn:hover{color:var(--danger)}
+/* Mes cours à l'horizontale : une colonne par matière, côte à côte, défilement horizontal s'il y en a beaucoup */
+#v-cours{min-width:0;max-width:100%}
+#v-cours .wrap{max-width:none;min-width:0;padding-left:max(16px,2vw);padding-right:max(16px,2vw)}
+.subjects{display:flex;gap:16px;align-items:flex-start;overflow-x:auto;max-width:100%;padding:4px 2px 14px}
+.subjects .subject{flex:0 0 300px;min-width:0;background:color-mix(in srgb,var(--panel) 60%,transparent);border:1px solid var(--bd);border-radius:var(--r);padding:4px 12px 12px}
+.subjects .subject h2{margin:12px 0 10px;font-size:18px}
+.subjects .clist{display:flex;flex-direction:column;gap:10px}
+.subjects .card{width:100%}
+@media (max-width:640px){.subjects .subject{flex-basis:82vw}}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 </head>
@@ -1342,9 +1351,11 @@ function renderHome(){
   else if(!S.courses.length)h+=`<div class="empty"><h2>Ton cahier est vide</h2><p class="muted">Au début du cours, ouvre « Écrire un cours » : tape, dicte ou enregistre le cours. À la fin, l'IA les remet au propre, prépare fiches, flashcards et quiz, et tu envoies le tout dans Notion.</p><div class="row"><button class="btn main" data-new>Écrire mon premier cours</button><a class="btn" href="#reglages">Importer d'anciens cours</a></div></div>`;
   else{
     const g={};S.courses.slice().sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||'')||(b.updatedAt||0)-(a.updatedAt||0)).forEach(c=>{(g[c.subject||'Divers']=g[c.subject||'Divers']||[]).push(c)});
+    h+='<div class="subjects">';
     Object.keys(g).sort((a,b)=>a.localeCompare(b,'fr')).forEach(k=>{
       h+=`<div class="subject"><h2>${escH(k)} <small>${g[k].length} cours</small></h2><div class="clist">${g[k].map(c=>`<button class="card" data-open="${escH(c.id)}"><span class="small muted">${escH(niceDate(c.createdAt))}</span><strong>${escH(c.title||'Cours sans titre')}</strong><span class="pills">${coursePills(c)}</span></button>`).join('')}</div></div>`;
     });
+    h+='</div>';
   }
   el.innerHTML=h+'</div>';
 }
